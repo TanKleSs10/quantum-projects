@@ -1,0 +1,54 @@
+import { ILogger } from "@src/interfaces/Logger";
+import cookieParser from "cookie-parser";
+import express, { Router, type Application } from "express";
+import helmet from "helmet";
+import cors from "cors";
+import http from "node:http";
+import { envs } from "@src/config/envs";
+import { errorHandler } from "@src/presentation/middlewares/errorHandler";
+
+interface ServerConfig {
+  port: number;
+  routes: Router;
+  Logger: ILogger;
+}
+
+export class Server {
+  public readonly app: Application;
+  private readonly httpServer: http.Server;
+  private readonly port: number;
+  private readonly routes: Router;
+  private readonly logger: ILogger;
+
+  constructor(config: ServerConfig) {
+    this.app = express();
+    this.port = config.port;
+    this.httpServer = http.createServer(this.app);
+    this.routes = config.routes;
+    this.logger = config.Logger;
+
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
+    this.app.use(helmet());
+    this.app.use(cors({
+      origin: envs.FRONTEND_URL,
+      credentials: envs.CORS_CREDENTIALS,
+    }));
+    this.app.use("/api/v1", this.routes);
+    this.app.use(errorHandler);
+  }
+
+  public start(): void {
+    this.httpServer.listen(this.port, () => {
+      this.logger.info(`Server is running on port ${this.port}`);
+    });
+  }
+
+  public stop(): void {
+    if (!this.app) return;
+    this.httpServer.close(() => {
+      this.logger.info("Server has been stopped");
+    });
+  }
+}

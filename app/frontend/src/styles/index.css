@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap');
+@import "react-toastify/dist/ReactToastify.css";
+@import "tailwindcss";
+
+:root {
+  --bg-base: 12 16 22;
+  --bg-surface: 18 24 32;
+  --bg-elevated: 24 32 44;
+  --border: 36 46 60;
+  --text-main: 232 237 243;
+  --text-secondary: 190 198 210;
+  --text-muted: 150 160 174;
+  --text-brand: 88 118 255;
+  --accent: 88 118 255;
+  --accent-hover: 74 102 240;
+  --danger: 235 87 87;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@theme inline {
+  --color-base: rgb(var(--bg-base));
+  --color-surface: rgb(var(--bg-surface));
+  --color-elevated: rgb(var(--bg-elevated));
+  --color-border: rgb(var(--border));
+  --color-main: rgb(var(--text-main));
+  --color-secondary: rgb(var(--text-secondary));
+  --color-muted: rgb(var(--text-muted));
+  --color-brand: rgb(var(--text-brand));
+  --color-accent: rgb(var(--accent));
+  --color-accent-hover: rgb(var(--accent-hover));
+  --color-danger: rgb(var(--danger));
+  --font-sans: var(--font-sans);
+}
+
+body {
+  @apply bg-[color:var(--color-base)] text-[color:var(--color-main)] font-sans;
+}
