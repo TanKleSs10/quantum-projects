@@ -49,7 +49,11 @@ export class ArchiveProjectUseCase implements IArchiveProjectUseCase {
       }
 
       try {
-        project.archive();
+        if (project.status !== "archived") {
+          project.archive();
+        } else {
+          project.unarchive();
+        }
       } catch (error: any) {
         throw new DomainError(
           error instanceof Error ? error.message : "Invalid project state",

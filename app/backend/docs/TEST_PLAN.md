@@ -24,6 +24,10 @@ Plan de implementacion de pruebas para endpoints nuevos/actualizados.
 - `POST /teams/:id/projects`: crea proyecto.
 - `GET /teams/:id/projects`: lista por team.
 
+## 4.1) Project status toggles (unit + e2e)
+- `PauseProjectUseCase`: alterna `active` <-> `paused`.
+- `ArchiveProjectUseCase`: alterna `completed` <-> `archived`.
+
 ## 5) Tasks under project (e2e)
 - `POST /projects/:projectId/tasks`: crea tarea.
 - `GET /projects/:projectId/tasks`: lista tareas.

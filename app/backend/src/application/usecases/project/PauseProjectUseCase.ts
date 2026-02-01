@@ -49,7 +49,11 @@ export class PauseProjectUseCase implements IPauseProjectUseCase {
       }
 
       try {
-        project.pause();
+        if (project.status !== "paused") {
+          project.pause();
+        } else {
+          project.resume();
+        }
       } catch (error: any) {
         throw new DomainError(
           error instanceof Error ? error.message : "Invalid project state",

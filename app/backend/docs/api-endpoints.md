@@ -661,7 +661,7 @@ Actualiza parcialmente un proyecto (solo owner/admin).
 
 #### PATCH /projects/:id/pause
 
-Pausa un proyecto (solo owner/admin).
+Alterna entre `paused` y `active` (solo owner/admin).
 
 - Params: `id`
 - Response 200:
@@ -683,7 +683,7 @@ Completa un proyecto (solo owner/admin).
 
 #### PATCH /projects/:id/archive
 
-Archiva un proyecto (solo owner/admin).
+Alterna entre `archived` y `completed` (solo owner/admin).
 
 - Params: `id`
 - Response 200:
