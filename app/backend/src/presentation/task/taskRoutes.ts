@@ -32,6 +32,14 @@ export class TaskRoutes {
       validateObjectIdParam("taskId"),
       asyncHandler(controller.updateTask),
     );
+    router.delete(
+      "/:taskId",
+      validateObjectIdParam("taskId"),
+      asyncHandler(controller.deleteTask),
+    );
+
+    // Task state management
+
     router.patch(
       "/:taskId/status",
       validateObjectIdParam("taskId"),
@@ -42,23 +50,6 @@ export class TaskRoutes {
       validateObjectIdParam("taskId"),
       asyncHandler(controller.assignTask),
     );
-
-    return router;
-  }
-
-  static get userRoutes() {
-    const router = Router();
-    const controller = new TaskController(
-      taskRepository,
-      projectRepository,
-      teamRepository,
-      eventBus,
-      logger.child("TaskController"),
-    );
-
-    router.use(authMiddleware);
-
-    router.get("/", asyncHandler(controller.listTasksByUser));
 
     return router;
   }
@@ -74,7 +65,6 @@ export class TaskRoutes {
     );
 
     router.use(authMiddleware);
-
     router.use(validateObjectIdParam("teamId"));
     router.get("/", asyncHandler(controller.listTasksByTeam));
 
@@ -92,7 +82,6 @@ export class TaskRoutes {
     );
 
     router.use(authMiddleware);
-
     router.use(validateObjectIdParam("projectId"));
     router.post("/", asyncHandler(controller.createTask));
     router.get("/", asyncHandler(controller.listTasksByProject));

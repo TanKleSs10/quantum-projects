@@ -31,4 +31,8 @@ export class TaskRepository implements ITaskRepository {
   async listTasksByUserId(userId: string): Promise<Task[]> {
     return this.taskDatasource.listTasksByUserId(userId);
   }
+
+  async deleteTask(taskId: string): Promise<void> {
+    await this.taskDatasource.deleteTask(taskId);
+  }
 }

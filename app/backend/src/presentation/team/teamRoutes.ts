@@ -6,6 +6,8 @@ import { userRepository } from "@src/infrastructure/factories/userRepositoryFact
 import { authMiddleware } from "@src/application/middlewares/authmiddleware";
 import { validateObjectIdParam } from "@src/application/middlewares/validateObjectId";
 import { asyncHandler } from "@src/presentation/middlewares/asyncHandler";
+import { ProjectRoutes } from "@src/presentation/project/projectRoutes";
+import { TaskRoutes } from "@src/presentation/task/taskRoutes";
 
 export class TeamRoutes {
   static get routes() {
@@ -19,11 +21,28 @@ export class TeamRoutes {
     router.use(authMiddleware);
 
     router.post("/", asyncHandler(controller.createTeam));
-    router.get("/", asyncHandler(controller.listTeamsByUser));
     router.get(
       "/:id",
       validateObjectIdParam("id"),
       asyncHandler(controller.getTeamById),
+    );
+    router.patch(
+      "/:id",
+      validateObjectIdParam("id"),
+      asyncHandler(controller.updateTeam),
+    );
+    router.delete(
+      "/:id",
+      validateObjectIdParam("id"),
+      asyncHandler(controller.deleteTeam),
+    );
+
+    // Member management routes
+
+    router.get(
+      "/:id/members",
+      validateObjectIdParam("id"),
+      asyncHandler(controller.listMembers),
     );
     router.post(
       "/:id/members",
@@ -44,6 +63,26 @@ export class TeamRoutes {
       "/:id/members/:userId/demote",
       validateObjectIdParam("id"),
       asyncHandler(controller.demoteMember),
+    );
+
+    // project - task in team
+    router.use(
+      "/:id/projects",
+      validateObjectIdParam("id"),
+      (req, _res, next) => {
+        req.params.teamId = req.params.id;
+        next();
+      },
+      ProjectRoutes.teamRoutes,
+    );
+    router.use(
+      "/:id/tasks",
+      validateObjectIdParam("id"),
+      (req, _res, next) => {
+        req.params.teamId = req.params.id;
+        next();
+      },
+      TaskRoutes.teamRoutes,
     );
 
     return router;

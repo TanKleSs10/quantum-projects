@@ -17,9 +17,6 @@ export class UserRoutes {
 
     router.use(authMiddleware);
 
-    // Read
-    router.get("/", asyncHandler(controller.getUserById));
-
     // Update
     router.put("/", asyncHandler(controller.updateUser));
 

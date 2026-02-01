@@ -2,18 +2,22 @@ import { Request, Response } from "express";
 import { ParsedQs } from "qs";
 import { AddMemberUseCase } from "@src/application/usecases/team/AddMemberUseCase";
 import { CreateTeamUseCase } from "@src/application/usecases/team/CreateTeamUseCase";
+import { DeleteTeamUseCase } from "@src/application/usecases/team/DeleteTeamUseCase";
 import { DemoteMemberUseCase } from "@src/application/usecases/team/DemoteMemberUseCase";
 import { GetTeamByIdUseCase } from "@src/application/usecases/team/GetTeamByIdUseCase";
 import { ListTeamsByUserUseCase } from "@src/application/usecases/team/ListTeamsByUserUseCase";
 import { PromoteMemberUseCase } from "@src/application/usecases/team/PromoteMemberUseCase";
 import { RemoveMemberUseCase } from "@src/application/usecases/team/RemoveMemberUseCase";
+import { UpdateTeamUseCase } from "@src/application/usecases/team/UpdateTeamUseCase";
 import { CreateTeamSchema } from "@src/domain/dtos/CreateTeamDTO";
 import { InviteMemberSchema } from "@src/domain/dtos/InvitateMemberDTO";
+import { UpdateTeamSchema } from "@src/domain/dtos/UpdateTeamDTO";
 import { ITeamRepository } from "@src/domain/repositories/ITeamRepository";
 import { IUserRepository } from "@src/domain/repositories/IUserRepository";
 import { Team } from "@src/domain/entities/Team";
 import { User } from "@src/domain/entities/User";
 import { ILogger } from "@src/interfaces/Logger";
+import { ApplicationError } from "@src/shared/errors/ApplicationError";
 import { DomainError } from "@src/shared/errors/DomainError";
 
 export class TeamController {
@@ -248,9 +252,109 @@ export class TeamController {
     }
   };
 
+  listMembers = async (req: Request, res: Response) => {
+    try {
+      const teamId = req.params.id;
+      const requesterId = req.userId;
+      if (!teamId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Team ID is required" });
+      }
+      if (!requesterId) {
+        this.logger.error("Unauthorized: No user ID found in request");
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const team = await new GetTeamByIdUseCase(
+        this.teamRepository,
+        this.logger,
+      ).execute(teamId, requesterId);
+
+      const members = await this.buildMemberDetails(team);
+      return res.status(200).json({ success: true, data: members });
+    } catch (error) {
+      return this.handleError(res, error);
+    }
+  };
+
+  updateTeam = async (req: Request, res: Response) => {
+    try {
+      const teamId = req.params.id;
+      const requesterId = req.userId;
+      if (!teamId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Team ID is required" });
+      }
+      if (!requesterId) {
+        this.logger.error("Unauthorized: No user ID found in request");
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const parsed = UpdateTeamSchema.safeParse(req.body);
+      if (!parsed.success) {
+        this.logger.warn("Invalid update team payload", {
+          issues: parsed.error.message,
+        });
+        return res.status(400).json({
+          success: false,
+          message: parsed.error.issues[0]?.message ?? "Invalid payload",
+        });
+      }
+
+      const team = await new UpdateTeamUseCase(
+        this.teamRepository,
+        this.logger,
+      ).execute(teamId, requesterId, parsed.data);
+
+      return res.status(200).json({ success: true, data: team });
+    } catch (error) {
+      return this.handleError(res, error);
+    }
+  };
+
+  deleteTeam = async (req: Request, res: Response) => {
+    try {
+      const teamId = req.params.id;
+      const requesterId = req.userId;
+      if (!teamId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Team ID is required" });
+      }
+      if (!requesterId) {
+        this.logger.error("Unauthorized: No user ID found in request");
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      await new DeleteTeamUseCase(
+        this.teamRepository,
+        this.logger,
+      ).execute(teamId, requesterId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Team deleted successfully",
+      });
+    } catch (error) {
+      return this.handleError(res, error);
+    }
+  };
+
   private handleError(res: Response, error: unknown) {
     if (error instanceof DomainError) {
       return res.status(400).json({ success: false, message: error.message });
+    }
+
+    if (error instanceof ApplicationError) {
+      return res.status(500).json({ success: false, message: error.message });
     }
 
     this.logger.error("Unexpected team error", {

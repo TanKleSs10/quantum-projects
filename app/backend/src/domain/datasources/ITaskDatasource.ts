@@ -15,4 +15,5 @@ export interface ITaskDatasource {
     },
   ): Promise<Task[]>;
   listTasksByUserId(userId: string): Promise<Task[]>;
+  deleteTask(taskId: string): Promise<void>;
 }
