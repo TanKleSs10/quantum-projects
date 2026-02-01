@@ -7,16 +7,13 @@ import DashboardCard from '@/components/DashboardCard'
 import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useProjectById, useUpdateProject } from '@/features/projects/projects.hooks'
 import { useGetTeams } from '@/features/team/team.hooks'
 import { updateProjectSchema, type UpdateProjectSchema } from '@/schemas/projects/update-project.schema'
-import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
 
 export default function EditProject() {
   const { projectId } = useParams()
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const { data: teamsData } = useGetTeams()
   const teams = teamsData?.data ?? []
@@ -74,11 +71,7 @@ export default function EditProject() {
   })
 
   return (
-    <DashboardLayout
-      title="Edit project"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Edit project"
@@ -152,6 +145,6 @@ export default function EditProject() {
           </form>
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

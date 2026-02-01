@@ -7,14 +7,11 @@ import DashboardCard from '@/components/DashboardCard'
 import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useCreateTeam } from '@/features/team/team.hooks'
 import { createTeamSchema, type CreateTeamSchema } from '@/schemas/teams/create-team.schema'
-import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
 
 export default function CreateTeam() {
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const createTeamMutation = useCreateTeam()
@@ -51,11 +48,7 @@ export default function CreateTeam() {
   })
 
   return (
-    <DashboardLayout
-      title="Create team"
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <PageHeader
           title="Create team"
@@ -107,6 +100,6 @@ export default function CreateTeam() {
           </form>
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

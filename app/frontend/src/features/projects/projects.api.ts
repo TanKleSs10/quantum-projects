@@ -16,7 +16,7 @@ export function createProject(payload: CreateProjectPayload) {
 }
 
 export function getProjectsByTeamId(teamId: string) {
-  return apiRequest<GetProjectsResponse>(`/projects?teamId=${teamId}`, {
+  return apiRequest<GetProjectsResponse>(`/teams/${teamId}/projects`, {
     method: 'GET',
   })
 }

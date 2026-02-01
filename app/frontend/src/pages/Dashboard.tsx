@@ -5,8 +5,8 @@ import EmptyState from '@/components/EmptyState'
 import MetricCard from '@/components/MetricCard'
 import ProjectItem from '@/components/ProjectItem'
 import TaskItem from '@/components/TaskItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useAuthStore } from '@/store/auth.store'
+import { useNavigate } from 'react-router'
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user)
@@ -50,12 +50,10 @@ export default function Dashboard() {
     { name: 'Sofia', action: 'commented on Launch plan.', time: '6h ago' },
   ]
 
+  const navigate = useNavigate()
+
   return (
-    <DashboardLayout
-      title="Dashboard"
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -66,7 +64,7 @@ export default function Dashboard() {
               Here&apos;s an overview of your projects and tasks.
             </p>
           </div>
-          <Button variant="primary">+ New project</Button>
+          <Button variant="primary" onClick={() => navigate("/projects/create")}>+ New project</Button>
         </div>
       </section>
 
@@ -232,6 +230,6 @@ export default function Dashboard() {
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

@@ -4,22 +4,15 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import ProjectItem from '@/components/ProjectItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useGetProjectsByUser } from '@/features/projects/projects.hooks'
-import { useAuthStore } from '@/store/auth.store'
 
 export default function Projects() {
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useGetProjectsByUser()
   const projects = data?.data ?? []
 
   return (
-    <DashboardLayout
-      title="Projects"
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <PageHeader
           title="Projects"
@@ -75,6 +68,6 @@ export default function Projects() {
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

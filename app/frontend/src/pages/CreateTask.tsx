@@ -1,22 +1,37 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
 import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
-import { useProjectsByTeam } from '@/features/projects/projects.hooks'
 import { useCreateTask } from '@/features/tasks/tasks.hooks'
-import { useGetTeams, useTeamById } from '@/features/team/team.hooks'
+import { useGetTeams, useTeamById, useTeamProjects } from '@/features/team/team.hooks'
 import { createTaskSchema, type CreateTaskSchema } from '@/schemas/tasks/create-task.schema'
-import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
+import type { Team } from '@/features/team/team.types'
 
 export default function CreateTask() {
-  const user = useAuthStore((state) => state.user)
+  const [selectedTeamId, setSelectedTeamId] = useState('')
+  const [selectedProjectId, setSelectedProjectId] = useState('')
+
+  const path = useLocation().search;
+  const projectIdFromQuery = new URLSearchParams(path).get('projectId');
+
+
+  const { data: teamsData } = useGetTeams()
+  const teams: Team[] = teamsData?.data ?? []
+
+  const {
+    data: projectsData,
+    isError: isProjectsError,
+    isLoading: isProjectsLoading,
+  } = useTeamProjects(projectIdFromQuery ?? selectedTeamId)
+
+  const projects = projectsData?.data ?? []
+
   const navigate = useNavigate()
   const {
     register,
@@ -29,22 +44,20 @@ export default function CreateTask() {
     mode: 'onChange',
   })
 
-  const { data: teamsData } = useGetTeams()
-  const teams = teamsData?.data ?? []
-  const [selectedTeamId, setSelectedTeamId] = useState('')
-  const activeTeamId = selectedTeamId || teams[0]?.id
-  const { data: projectsData } = useProjectsByTeam(activeTeamId)
-  const projects = projectsData?.data ?? []
-  const { data: teamData } = useTeamById(activeTeamId)
-  const teamMembers = teamData?.data.members ?? []
-  const selectedProjectId = watch('projectId')
+
+  // const activeTeamId = selectedTeamId || teams[0]?.id
+
+  //   const { data: teamData } = useTeamById(activeTeamId)
+  // const teamMembers = teamData?.data.members ?? []
+  // const selectedProjectId = watch('projectId')
+
   const createTaskMutation = useCreateTask(selectedProjectId || '')
 
-  useEffect(() => {
-    if (!selectedTeamId && teams[0]?.id) {
-      setSelectedTeamId(teams[0].id)
-    }
-  }, [selectedTeamId, teams])
+  // useEffect(() => {
+  //   if (!selectedTeamId && teams[0]?.id) {
+  //     setSelectedTeamId(teams[0].id)
+  //   }
+  // }, [selectedTeamId, teams])
 
   const handleTeamChange = (value: string) => {
     setSelectedTeamId(value)
@@ -77,13 +90,8 @@ export default function CreateTask() {
       }
     )
   })
-
   return (
-    <DashboardLayout
-      title="Create task"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Create task"
@@ -122,7 +130,7 @@ export default function CreateTask() {
                 <select
                   id="teamId"
                   className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  value={activeTeamId ?? ''}
+                  value={selectedTeamId ?? ''}
                   onChange={(event) => handleTeamChange(event.target.value)}
                 >
                   <option value="">Select a team</option>
@@ -142,16 +150,25 @@ export default function CreateTask() {
                 </label>
                 <select
                   id="projectId"
+                  value={selectedProjectId ?? ''}
                   className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                   {...register('projectId')}
                 >
                   <option value="">Select a project</option>
+                  {isProjectsLoading ? (
+                    <option value="" disabled>Loading projects...</option>
+                  ) : null}
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>{project.name}</option>
                   ))}
                 </select>
                 {errors.projectId ? (
                   <p className="mt-1 text-sm text-danger">{errors.projectId.message}</p>
+                ) : null}
+                {isProjectsError ? (
+                  <p className="mt-2 text-sm text-danger">
+                    Unable to load projects for this team.
+                  </p>
                 ) : null}
                 {activeTeamId && !projects.length ? (
                   <p className="mt-2 text-sm text-muted">
@@ -234,6 +251,6 @@ export default function CreateTask() {
           </form>
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

@@ -6,15 +6,12 @@ import DashboardCard from '@/components/DashboardCard'
 import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { createProjectSchema, type CreateProjectSchema } from '@/schemas/projects/create-project.schema'
-import { useAuthStore } from '@/store/auth.store'
 import { useCreateProject } from '@/features/projects/projects.hooks'
 import { toastClient } from '@/utils/toast'
 import { useGetTeams } from '@/features/team/team.hooks'
 
 export default function CreateProject() {
-  const user = useAuthStore((state) => state.user)
   const {
     register,
     handleSubmit,
@@ -54,11 +51,7 @@ export default function CreateProject() {
   })
 
   return (
-    <DashboardLayout
-      title="Create project"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Create project"
@@ -137,6 +130,6 @@ export default function CreateProject() {
           </form>
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

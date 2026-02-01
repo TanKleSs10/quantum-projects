@@ -35,12 +35,13 @@ export default function Login() {
         })
       },
       onSuccess: (res) => {
+        const user = 'user' in res.data ? res.data.user : res.data
         setAccessToken(res.token)
         setTokenExpiresAt(getTokenExpiry(res.token))
         setAuthenticated(true)
-        setUser(res.data)
+        setUser(user)
         toastClient.success('Welcome back.')
-        if (res.data.isVerified === false) {
+        if (user.isVerified === false) {
           navigate('/verify-email')
           return
         }

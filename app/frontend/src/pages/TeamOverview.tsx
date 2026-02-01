@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import Button from '@/components/Button'
 import PageHeader from '@/components/PageHeader'
@@ -5,9 +6,9 @@ import TeamOverviewMembers from '@/components/team/TeamOverviewMembers'
 import TeamOverviewProjects from '@/components/team/TeamOverviewProjects'
 import TeamOverviewSettings from '@/components/team/TeamOverviewSettings'
 import TeamOverviewTasks from '@/components/team/TeamOverviewTasks'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useTeamById, useTeamProjects, useTeamTasks } from '@/features/team/team.hooks'
 import { useAuthStore } from '@/store/auth.store'
+import { useLayoutStore } from '@/store/layout.store'
 
 const formatRole = (role?: 'owner' | 'admin' | 'member') => {
   if (!role) {
@@ -42,25 +43,25 @@ export default function TeamOverview() {
 
   if (!teamId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-base px-6 text-main">
-        <p className="text-sm text-muted">Team not found.</p>
-      </div>
+      <p className="text-sm text-muted">Team not found.</p>
     )
   }
 
   const team = teamResponse?.data
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
   const members = team?.members ?? []
   const userRole = formatRole(members.find((member) => member.userId === user?.id)?.role)
 
   const projects = projectsResponse?.data ?? []
   const tasks = tasksResponse?.data ?? []
 
+  useEffect(() => {
+    setPageTitle(team?.name ?? 'Team')
+    return () => setPageTitle(null)
+  }, [setPageTitle, team?.name])
+
   return (
-    <DashboardLayout
-      title={team?.name ?? 'Team'}
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <PageHeader
           title={team?.name ?? 'Team'}
@@ -106,6 +107,6 @@ export default function TeamOverview() {
         />
         <TeamOverviewSettings />
       </section>
-    </DashboardLayout>
+    </>
   )
 }

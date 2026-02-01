@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
@@ -6,7 +6,6 @@ import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import ProjectItem from '@/components/ProjectItem'
 import TaskItem from '@/components/TaskItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import {
   useArchiveProject,
   useCompleteProject,
@@ -15,12 +14,11 @@ import {
   useProjectById,
   useResumeProject,
 } from '@/features/projects/projects.hooks'
-import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
+import { useLayoutStore } from '@/store/layout.store'
 
 export default function ProjectOverview() {
   const { projectId } = useParams()
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const projectQuery = useProjectById(projectId)
   const pauseMutation = usePauseProject(projectId ?? '')
@@ -31,23 +29,23 @@ export default function ProjectOverview() {
   const [deleteConfirmed, setDeleteConfirmed] = useState(false)
 
   const project = projectQuery.data?.data
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
   const tasks = [
     { title: 'Kickoff alignment', priority: 'medium' as const },
     { title: 'Wireframe review', priority: 'high' as const },
   ]
 
+  useEffect(() => {
+    setPageTitle(project?.name ?? 'Project')
+    return () => setPageTitle(null)
+  }, [project?.name, setPageTitle])
+
   if (!projectId) {
     return (
-      <DashboardLayout
-        title="Project"
-        userName={user?.name ?? ''}
-        userEmail={user?.email ?? ''}
-      >
-        <EmptyState
-          title="Project not found"
-          description="Select a project from the list to view details."
-        />
-      </DashboardLayout>
+      <EmptyState
+        title="Project not found"
+        description="Select a project from the list to view details."
+      />
     )
   }
 
@@ -82,11 +80,7 @@ export default function ProjectOverview() {
   }
 
   return (
-    <DashboardLayout
-      title="Project"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title={project?.name ?? 'Project'}
@@ -125,7 +119,9 @@ export default function ProjectOverview() {
 
         <DashboardCard title="Quick actions">
           <div className="space-y-3">
-            <Button className="w-full">Create task</Button>
+            <Link to={`/tasks/create?projectId=${projectId}`}>
+              <Button className="w-full">Create task</Button>
+            </Link>
             <Button variant="outline" className="w-full">Invite teammate</Button>
             <Link to={`/projects/${projectId ?? ''}/edit`}>
               <Button variant="ghost" className="w-full">Edit project</Button>
@@ -217,6 +213,6 @@ export default function ProjectOverview() {
           />
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

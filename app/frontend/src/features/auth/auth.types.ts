@@ -33,7 +33,7 @@ export type VerifyEmailResponse = {
 
 export type LoginResponse = {
   success: boolean
-  data: User
+  data: User | { user: User }
   token: string
 }
 

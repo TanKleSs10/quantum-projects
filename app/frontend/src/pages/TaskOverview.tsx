@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
@@ -6,18 +7,23 @@ import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import TaskPriorityBadge from '@/components/tasks/TaskPriorityBadge'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useChangeTaskStatus, useTaskById } from '@/features/tasks/tasks.hooks'
-import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
+import { useLayoutStore } from '@/store/layout.store'
+import { formatDate } from '@/utils/format-date'
 
 export default function TaskOverview() {
-  const user = useAuthStore((state) => state.user)
   const { taskId } = useParams()
   const queryClient = useQueryClient()
   const taskQuery = useTaskById(taskId)
   const task = taskQuery.data?.data
   const changeStatusMutation = useChangeTaskStatus(taskId || '')
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
+
+  useEffect(() => {
+    setPageTitle(task?.title ?? 'Task')
+    return () => setPageTitle(null)
+  }, [setPageTitle, task?.title])
 
   const handleMarkDone = () => {
     if (!taskId) {
@@ -40,11 +46,7 @@ export default function TaskOverview() {
   }
 
   return (
-    <DashboardLayout
-      title="Task"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title={task?.title ?? 'Task'}
@@ -79,7 +81,7 @@ export default function TaskOverview() {
               <div className="rounded-md border border-border bg-base px-4 py-3 text-sm">
                 <p className="text-secondary">Due date</p>
                 <p className="mt-1 text-main">
-                  {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                  {task.dueDate ? formatDate(task.dueDate) : 'No due date'}
                 </p>
               </div>
             </div>
@@ -126,6 +128,6 @@ export default function TaskOverview() {
           />
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

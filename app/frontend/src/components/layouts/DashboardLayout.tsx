@@ -1,26 +1,27 @@
 import { useState } from 'react'
-import type { ReactNode } from 'react'
 import Button from '@/components/Button'
 import DashboardSidebar from '@/components/DashboardSidebar'
+import { Outlet, useLocation } from 'react-router'
+import { useAuthStore } from '@/store/auth.store'
+import { useLayoutStore } from '@/store/layout.store'
 
-type DashboardLayoutProps = {
-  title: string
-  userName: string
-  userEmail: string
-  children: ReactNode
-}
-
-export default function DashboardLayout({
-  title,
-  userName,
-  userEmail,
-  children,
-}: DashboardLayoutProps) {
+export default function DashboardLayout() {
+  const user = useAuthStore((state) => state.user)
+  const pageTitle = useLayoutStore((state) => state.pageTitle)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  // get a title from path
+  const path = useLocation().pathname
+  const fallbackTitle = path
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' - ') || 'Dashboard'
+  const title = pageTitle ?? fallbackTitle
+
   return (
-    <div className="min-h-screen bg-base text-main">
-      <header className="border-b border-border bg-surface">
+    <div className="flex h-screen flex-col overflow-hidden bg-base text-main">
+      <header className="shrink-0 border-b border-border bg-surface">
         <div className="flex items-center justify-between gap-6 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="lg:hidden">
@@ -35,20 +36,22 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            {userName && userEmail ? (
+            {user ? (
               <div className="hidden text-right lg:block">
-                <p className="text-sm font-medium text-main">{userName}</p>
-                <p className="text-xs text-muted">{userEmail}</p>
+                <p className="text-sm font-medium text-main">{user.name}</p>
+                <p className="text-xs text-muted">{user.email}</p>
               </div>
             ) : null}
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex">
-        <DashboardSidebar className="hidden lg:block" />
-        <main className="flex-1 px-6 py-8">
-          {children}
+      <div className="w-full flex flex-1 overflow-hidden">
+        <div className="hidden h-full lg:block">
+          <DashboardSidebar />
+        </div>
+        <main className="flex-1 overflow-y-auto px-6 py-8">
+          <Outlet />
         </main>
       </div>
 

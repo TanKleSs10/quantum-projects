@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { formatDate } from '@/utils/format-date'
 
 type ProjectItemProps = {
   name: string
@@ -16,6 +17,7 @@ const statusStyles = {
 }
 
 export default function ProjectItem({ name, status, tags, due, href }: ProjectItemProps) {
+  const formattedDue = formatDate(due)
   const content = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
@@ -36,8 +38,8 @@ export default function ProjectItem({ name, status, tags, due, href }: ProjectIt
           ))}
         </div>
       </div>
-      {due ? (
-        <p className="text-xs text-muted">Due {due}</p>
+      {formattedDue ? (
+        <p className="text-xs text-muted">Due {formattedDue}</p>
       ) : null}
     </div>
   )

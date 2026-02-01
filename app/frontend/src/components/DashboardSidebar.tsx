@@ -25,7 +25,7 @@ export default function DashboardSidebar({ className, onNavigate }: DashboardSid
   }
 
   return (
-    <aside className={`w-64 flex-shrink-0 border-r border-border bg-surface ${className ?? ''}`}>
+    <aside className={`w-64 h-screen shrink-0 border-r border-border bg-surface ${className ?? ''}`}>
       <div className="flex h-full flex-col px-4 py-6">
         <nav className="space-y-1">
           {navItems.map((item) => (

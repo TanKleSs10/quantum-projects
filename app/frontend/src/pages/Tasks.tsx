@@ -4,21 +4,14 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import TaskListItem from '@/components/tasks/TaskListItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useTasksByUser } from '@/features/tasks/tasks.hooks'
-import { useAuthStore } from '@/store/auth.store'
 
 export default function Tasks() {
-  const user = useAuthStore((state) => state.user)
   const tasksQuery = useTasksByUser()
   const tasks = tasksQuery.data?.data ?? []
 
   return (
-    <DashboardLayout
-      title="Tasks"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Tasks"
@@ -62,6 +55,6 @@ export default function Tasks() {
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }
