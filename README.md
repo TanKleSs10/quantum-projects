@@ -124,24 +124,29 @@ npm run dev
 
 Toda la documentación está centralizada en la carpeta `/docs`.
 
-### Backend
+Backend
 
-* `docs/backend/PROJECT.md`
-* `docs/backend/api-endpoints.md`
-* `docs/backend/branching.md`
-* `docs/backend/e2e-warnings.md`
+docs/backend/PROJECT.md / PROJECT.en.md
 
-### Frontend
+docs/backend/api-endpoints.md / api-endpoints.en.md
 
-* `docs/frontend/CONTEXT.md`
-* `docs/frontend/CONTRIBUTING.md`
-* `docs/frontend/api-endpoints.md`
+docs/backend/branching.md / branching.en.md
 
-### Notas técnicas
+docs/backend/e2e-warnings.md / e2e-warnings.en.md
 
-* `docs/notes/PROJECT_STATUS_NOTE.md`
-* `docs/notes/TASK_STATUS_NOTE.md`
-* `docs/notes/BACKEND_GAPS.md`
+Frontend
+
+docs/frontend/CONTEXT.md / CONTEXT.en.md
+
+docs/frontend/CONTRIBUTING.md / CONTRIBUTING.en.md
+
+docs/frontend/api-endpoints.md / api-endpoints.en.md
+
+Notas técnicas
+
+docs/notes/PROJECT_STATUS_NOTE.md / PROJECT_STATUS_NOTE.en.md
+
+docs/notes/TASK_STATUS_NOTE.md / TASK_STATUS_NOTE.en.md
 
 ---
 
