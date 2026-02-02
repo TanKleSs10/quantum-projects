@@ -2,13 +2,7 @@ import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import type { TeamMember } from '@/features/team/team.types'
-
-type TeamOverviewMembersProps = {
-  members: TeamMember[]
-  isLoading?: boolean
-  isError?: boolean
-  onRetry?: () => void
-}
+import { Link } from 'react-router'
 
 const formatRole = (role?: TeamMember['role']) => {
   if (!role) {
@@ -18,12 +12,23 @@ const formatRole = (role?: TeamMember['role']) => {
   return role.charAt(0).toUpperCase() + role.slice(1)
 }
 
+type TeamOverviewMembersProps = {
+  teamId: string
+  members: TeamMember[]
+  isLoading: boolean
+  isError: boolean
+  onRetry: () => void
+}
+
 export default function TeamOverviewMembers({
+  teamId,
   members,
-  isLoading = false,
-  isError = false,
+  isLoading,
+  isError,
   onRetry,
 }: TeamOverviewMembersProps) {
+  const topMembers = members.slice(0, 3);
+
   return (
     <DashboardCard
       title="Members"
@@ -41,9 +46,9 @@ export default function TeamOverviewMembers({
             </Button>
           }
         />
-      ) : members.length ? (
+      ) : members ? (
         <div className="space-y-3">
-          {members.map((member) => (
+          {topMembers.map((member) => (
             <div
               key={member.userId}
               className="flex items-center justify-between rounded-md border border-border bg-base px-3 py-2 text-sm"
@@ -56,6 +61,9 @@ export default function TeamOverviewMembers({
               </span>
             </div>
           ))}
+          <Link to={`/teams/${teamId}/members`}>
+            <Button variant="outline" className="w-full">Manage members</Button>
+          </Link>
         </div>
       ) : (
         <EmptyState

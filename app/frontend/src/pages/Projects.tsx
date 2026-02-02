@@ -4,31 +4,24 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import ProjectItem from '@/components/ProjectItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useGetProjectsByUser } from '@/features/projects/projects.hooks'
-import { useAuthStore } from '@/store/auth.store'
 
 export default function Projects() {
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useGetProjectsByUser()
   const projects = data?.data ?? []
 
   return (
-    <DashboardLayout
-      title="Projects"
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <PageHeader
           title="Projects"
           description="All projects you collaborate on."
-          action={
-            <Button variant="primary" onClick={() => navigate('/projects/create')}>
-              + Create project
+          action={(
+            <Button variant="primary" onClick={() => navigate('/teams')}>
+              Create project
             </Button>
-          }
+          )}
         />
       </section>
 
@@ -65,16 +58,16 @@ export default function Projects() {
           ) : (
             <EmptyState
               title="No projects yet"
-              description="Create a project to start tracking work."
+              description="Create a project from a team to start tracking work."
               action={
-                <Button variant="primary" onClick={() => navigate('/projects/create')}>
-                  Create project
+                <Button variant="primary" onClick={() => navigate('/teams')}>
+                  Browse teams
                 </Button>
               }
             />
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

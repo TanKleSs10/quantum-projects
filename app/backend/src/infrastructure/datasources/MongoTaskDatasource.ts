@@ -78,4 +78,16 @@ export class MongoTaskDatasource implements ITaskDatasource {
       });
     }
   }
+
+  async deleteTask(taskId: string): Promise<void> {
+    try {
+      const deleted = await TaskMongoModel.findByIdAndDelete(taskId);
+      if (!deleted) {
+        throw new InfrastructureError("Task not found");
+      }
+    } catch (error) {
+      if (error instanceof InfrastructureError) throw error;
+      throw new InfrastructureError("Error deleting task", { cause: error });
+    }
+  }
 }

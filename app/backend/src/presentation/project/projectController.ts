@@ -4,17 +4,16 @@ import { DeleteProjectUseCase } from "@src/application/usecases/project/DeletePr
 import { GetProjectByIdUseCase } from "@src/application/usecases/project/GetProjectByIdUseCase";
 import { UpdateProjectUseCase } from "@src/application/usecases/project/UpdateProjectUseCase";
 import { PauseProjectUseCase } from "@src/application/usecases/project/PauseProjectUseCase";
-import { ResumeProjectUseCase } from "@src/application/usecases/project/ResumeProjectUseCase";
 import { CompleteProjectUseCase } from "@src/application/usecases/project/CompleteProjectUseCase";
 import { ArchiveProjectUseCase } from "@src/application/usecases/project/ArchiveProjectUseCase";
 import { ListProjectsByTeamUseCase } from "@src/application/usecases/project/ListProjectsByTeamUseCase";
 import { ListProjectsByUserUseCase } from "@src/application/usecases/project/ListProjectsByUserUseCase";
-import { UnarchiveProjectUseCase } from "@src/application/usecases/project/UnarchiveProjectUseCase";
 import { CreateProjectSchema } from "@src/domain/dtos/CreateProjectDTO";
 import { UpdateProjectSchema } from "@src/domain/dtos/UpdateProjectDTO";
 import { IProjectRepository } from "@src/domain/repositories/IProjectRepository";
 import { ITeamRepository } from "@src/domain/repositories/ITeamRepository";
 import { ILogger } from "@src/interfaces/Logger";
+import { ApplicationError } from "@src/shared/errors/ApplicationError";
 import { DomainError } from "@src/shared/errors/DomainError";
 
 export class ProjectController {
@@ -150,45 +149,6 @@ export class ProjectController {
     }
   };
 
-  updateProject = async (req: Request, res: Response) => {
-    try {
-      const projectId = req.params.id;
-      const requesterId = req.userId ?? null;
-      if (!projectId) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Project ID is required" });
-      }
-      if (!requesterId) {
-        this.logger.error("Unauthorized: No user ID found in request");
-        return res
-          .status(401)
-          .json({ success: false, message: "Unauthorized" });
-      }
-
-      const parsed = UpdateProjectSchema.safeParse(req.body);
-      if (!parsed.success) {
-        this.logger.warn("Invalid update project payload", {
-          issues: parsed.error.message,
-        });
-        return res.status(400).json({
-          success: false,
-          message: parsed.error.issues[0]?.message ?? "Invalid payload",
-        });
-      }
-
-      const project = await new UpdateProjectUseCase(
-        this.projectRepository,
-        this.teamRepository,
-        this.logger,
-      ).execute(projectId, requesterId, parsed.data);
-
-      return res.status(200).json({ success: true, data: project });
-    } catch (error) {
-      return this.handleError(res, error);
-    }
-  };
-
   patchProject = async (req: Request, res: Response) => {
     try {
       const projectId = req.params.id;
@@ -256,34 +216,6 @@ export class ProjectController {
     }
   };
 
-  resumeProject = async (req: Request, res: Response) => {
-    try {
-      const projectId = req.params.id;
-      const requesterId = req.userId ?? null;
-      if (!projectId) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Project ID is required" });
-      }
-      if (!requesterId) {
-        this.logger.error("Unauthorized: No user ID found in request");
-        return res
-          .status(401)
-          .json({ success: false, message: "Unauthorized" });
-      }
-
-      const project = await new ResumeProjectUseCase(
-        this.projectRepository,
-        this.teamRepository,
-        this.logger,
-      ).execute(projectId, requesterId);
-
-      return res.status(200).json({ success: true, data: project });
-    } catch (error) {
-      return this.handleError(res, error);
-    }
-  };
-
   completeProject = async (req: Request, res: Response) => {
     try {
       const projectId = req.params.id;
@@ -340,34 +272,6 @@ export class ProjectController {
     }
   };
 
-  unarchiveProject = async (req: Request, res: Response) => {
-    try {
-      const projectId = req.params.id;
-      const requesterId = req.userId ?? null;
-      if (!projectId) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Project ID is required" });
-      }
-      if (!requesterId) {
-        this.logger.error("Unauthorized: No user ID found in request");
-        return res
-          .status(401)
-          .json({ success: false, message: "Unauthorized" });
-      }
-
-      const project = await new UnarchiveProjectUseCase(
-        this.projectRepository,
-        this.teamRepository,
-        this.logger,
-      ).execute(projectId, requesterId);
-
-      return res.status(200).json({ success: true, data: project });
-    } catch (error) {
-      return this.handleError(res, error);
-    }
-  };
-
   deleteProject = async (req: Request, res: Response) => {
     try {
       const projectId = req.params.id;
@@ -402,6 +306,10 @@ export class ProjectController {
   private handleError(res: Response, error: unknown) {
     if (error instanceof DomainError) {
       return res.status(400).json({ success: false, message: error.message });
+    }
+
+    if (error instanceof ApplicationError) {
+      return res.status(500).json({ success: false, message: error.message });
     }
 
     this.logger.error("Unexpected project error", {

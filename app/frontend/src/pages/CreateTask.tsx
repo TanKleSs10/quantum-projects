@@ -1,54 +1,54 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
+import EmptyState from '@/components/EmptyState'
 import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
-import { useProjectsByTeam } from '@/features/projects/projects.hooks'
+import { useProjectById } from '@/features/projects/projects.hooks'
 import { useCreateTask } from '@/features/tasks/tasks.hooks'
-import { useGetTeams, useTeamById } from '@/features/team/team.hooks'
+import { useTeamById } from '@/features/team/team.hooks'
 import { createTaskSchema, type CreateTaskSchema } from '@/schemas/tasks/create-task.schema'
-import { useAuthStore } from '@/store/auth.store'
+import { useLayoutStore } from '@/store/layout.store'
 import { toastClient } from '@/utils/toast'
 
 export default function CreateTask() {
-  const user = useAuthStore((state) => state.user)
+  const { projectId } = useParams()
   const navigate = useNavigate()
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
+
+  const projectQuery = useProjectById(projectId)
+  const project = projectQuery.data?.data
+  const teamQuery = useTeamById(project?.teamId)
+  const members = teamQuery.data?.data.members ?? []
+  const hasMembers = members.length > 0
+
+  const createTaskMutation = useCreateTask(projectId ?? '')
+
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<CreateTaskSchema>({
     resolver: zodResolver(createTaskSchema),
     mode: 'onChange',
   })
 
-  const { data: teamsData } = useGetTeams()
-  const teams = teamsData?.data ?? []
-  const [selectedTeamId, setSelectedTeamId] = useState('')
-  const activeTeamId = selectedTeamId || teams[0]?.id
-  const { data: projectsData } = useProjectsByTeam(activeTeamId)
-  const projects = projectsData?.data ?? []
-  const { data: teamData } = useTeamById(activeTeamId)
-  const teamMembers = teamData?.data.members ?? []
-  const selectedProjectId = watch('projectId')
-  const createTaskMutation = useCreateTask(selectedProjectId || '')
-
   useEffect(() => {
-    if (!selectedTeamId && teams[0]?.id) {
-      setSelectedTeamId(teams[0].id)
-    }
-  }, [selectedTeamId, teams])
+    setPageTitle(project?.name ? `Create task - ${project.name}` : 'Create task')
+    return () => setPageTitle(null)
+  }, [project?.name, setPageTitle])
 
-  const handleTeamChange = (value: string) => {
-    setSelectedTeamId(value)
-    setValue('projectId', '')
+  if (!projectId) {
+    return (
+      <EmptyState
+        title="Project not found"
+        description="Select a project before creating a task."
+      />
+    )
   }
 
   const handleFormSubmit = handleSubmit((data) => {
@@ -68,7 +68,7 @@ export default function CreateTask() {
       },
       {
         onSuccess: () => {
-          navigate('/tasks')
+          navigate(`/projects/${projectId}`)
           toastClient.success('Task created successfully')
         },
         onError: (error) => {
@@ -79,18 +79,14 @@ export default function CreateTask() {
   })
 
   return (
-    <DashboardLayout
-      title="Create task"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Create task"
-          description="Add a new task to track work across your team."
+          description="Add a new task to keep the project on track."
           action={(
-            <Link to="/tasks">
-              <Button variant="outline">Back to tasks</Button>
+            <Link to={`/projects/${projectId}`}>
+              <Button variant="outline">Back to project</Button>
             </Link>
           )}
         />
@@ -99,11 +95,11 @@ export default function CreateTask() {
       <section className="mt-6">
         <DashboardCard
           title="Task details"
-          description="Set scope, status, and ownership."
+          description={project?.name ? `Project: ${project.name}` : 'Set scope, status, and ownership.'}
         >
           <form className="space-y-4" onSubmit={handleFormSubmit}>
             <InputText
-              label="Title"
+              label="Task title"
               placeholder="e.g. Prepare kickoff brief"
               {...register('title')}
               error={errors.title?.message}
@@ -114,69 +110,7 @@ export default function CreateTask() {
               {...register('description')}
               error={errors.description?.message}
             />
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="teamId">
-                  Team
-                </label>
-                <select
-                  id="teamId"
-                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  value={activeTeamId ?? ''}
-                  onChange={(event) => handleTeamChange(event.target.value)}
-                >
-                  <option value="">Select a team</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
-                {!teams.length ? (
-                  <p className="mt-2 text-sm text-muted">
-                    You don&apos;t have teams yet. Create one before adding tasks.
-                  </p>
-                ) : null}
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="projectId">
-                  Project
-                </label>
-                <select
-                  id="projectId"
-                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  {...register('projectId')}
-                >
-                  <option value="">Select a project</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>{project.name}</option>
-                  ))}
-                </select>
-                {errors.projectId ? (
-                  <p className="mt-1 text-sm text-danger">{errors.projectId.message}</p>
-                ) : null}
-                {activeTeamId && !projects.length ? (
-                  <p className="mt-2 text-sm text-muted">
-                    This team doesn&apos;t have projects yet. Create one to add tasks.
-                  </p>
-                ) : null}
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="assigneeId">
-                  Assignee (optional)
-                </label>
-                <select
-                  id="assigneeId"
-                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  {...register('assigneeId')}
-                >
-                  <option value="">Unassigned</option>
-                  {teamMembers.map((member) => (
-                    <option key={member.userId} value={member.userId}>
-                      {member.user?.name ?? member.userId}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="status">
@@ -187,6 +121,7 @@ export default function CreateTask() {
                   className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                   {...register('status')}
                 >
+                  <option value="">Select status</option>
                   <option value="todo">To do</option>
                   <option value="in_progress">In progress</option>
                   <option value="blocked">Blocked</option>
@@ -202,38 +137,77 @@ export default function CreateTask() {
                   className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                   {...register('priority')}
                 >
+                  <option value="">Select priority</option>
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                   <option value="urgent">Urgent</option>
                 </select>
               </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="dueDate">
+                  Due date (optional)
+                </label>
+                <InputText
+                  id="dueDate"
+                  type="date"
+                  {...register('dueDate')}
+                  error={errors.dueDate?.message}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="assigneeId">
+                  Assignee (optional)
+                </label>
+                <select
+                  id="assigneeId"
+                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                  {...register('assigneeId')}
+                >
+                  <option value="">Select assignee</option>
+                  {teamQuery.isLoading ? (
+                    <option value="" disabled>Loading members...</option>
+                  ) : null}
+                  {members.map((member) => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.user?.name ?? member.userId}
+                    </option>
+                  ))}
+                </select>
+                {errors.assigneeId ? (
+                  <p className="mt-2 text-sm text-danger">{errors.assigneeId.message}</p>
+                ) : null}
+                {teamQuery.isError ? (
+                  <p className="mt-2 text-sm text-danger">Unable to load team members.</p>
+                ) : null}
+                {!teamQuery.isLoading && !hasMembers ? (
+                  <p className="mt-2 text-sm text-danger">Team members are required to assign this task.</p>
+                ) : null}
+              </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <InputText
-                label="Due date (optional)"
-                type="date"
-                {...register('dueDate')}
-                error={errors.dueDate?.message}
-              />
-              <InputText
-                label="Tags (optional)"
-                placeholder="e.g. onboarding, q2"
-                {...register('tags')}
-                error={errors.tags?.message}
-              />
-            </div>
+
+            <InputText
+              label="Tags (optional)"
+              placeholder="e.g. onboarding, q2"
+              {...register('tags')}
+              error={errors.tags?.message}
+            />
+
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <Link to="/tasks">
+              <Link to={`/projects/${projectId}`}>
                 <Button type="button" variant="ghost">Cancel</Button>
               </Link>
-              <Button type="submit" disabled={!projects.length}>
-                Create task
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={createTaskMutation.isPending || !hasMembers}
+              >
+                {createTaskMutation.isPending ? 'Creating...' : 'Create task'}
               </Button>
             </div>
           </form>
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

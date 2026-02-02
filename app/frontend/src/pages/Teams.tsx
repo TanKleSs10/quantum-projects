@@ -4,12 +4,9 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import TeamList from '@/components/TeamList'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useGetTeams } from '@/features/team/team.hooks'
-import { useAuthStore } from '@/store/auth.store'
 
 export default function Teams() {
-  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useGetTeams()
   const teams = (data?.data ?? []).map((team) => ({
@@ -21,11 +18,7 @@ export default function Teams() {
   }))
 
   return (
-    <DashboardLayout
-      title="Teams"
-      userName={user?.name ?? 'User'}
-      userEmail={user?.email ?? 'user@email.com'}
-    >
+    <>
       <section>
         <PageHeader
           title="Teams"
@@ -63,6 +56,6 @@ export default function Teams() {
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

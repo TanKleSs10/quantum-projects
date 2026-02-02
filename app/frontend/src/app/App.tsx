@@ -14,6 +14,8 @@ import Settings from '@/pages/Settings'
 import Teams from '@/pages/Teams'
 import CreateTeam from '@/pages/CreateTeam'
 import TeamOverview from '@/pages/TeamOverview'
+import TeamSettings from '@/pages/TeamSettings'
+import TeamMembers from '@/pages/TeamMembers'
 import Projects from '@/pages/Projects'
 import CreateProject from '@/pages/CreateProject'
 import ProjectOverview from '@/pages/ProjectOverview'
@@ -23,6 +25,7 @@ import CreateTask from '@/pages/CreateTask'
 import TaskOverview from '@/pages/TaskOverview'
 import AuthGuard from './guards/AuthGuard'
 import GuestGuard from './guards/GuestGuard'
+import DashboardLayout from '@/components/layouts/DashboardLayout'
 
 export default function App() {
   return (
@@ -39,19 +42,22 @@ export default function App() {
           </Route>
         </Route>
         <Route element={<AuthGuard />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/create" element={<CreateProject />} />
-          <Route path="/projects/:projectId" element={<ProjectOverview />} />
-          <Route path="/projects/:projectId/edit" element={<EditProject />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/tasks/create" element={<CreateTask />} />
-          <Route path="/tasks/:taskId" element={<TaskOverview />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/teams/create" element={<CreateTeam />} />
-          <Route path="/teams/:teamId" element={<TeamOverview />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/teams/:teamId/project/create" element={<CreateProject />} />
+            <Route path="/projects/:projectId" element={<ProjectOverview />} />
+            <Route path="/projects/:projectId/edit" element={<EditProject />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/projects/:projectId/task/create" element={<CreateTask />} />
+            <Route path="/tasks/:taskId" element={<TaskOverview />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/create" element={<CreateTeam />} />
+            <Route path="/teams/:teamId" element={<TeamOverview />} />
+            <Route path="/teams/:teamId/members" element={<TeamMembers />} />
+            <Route path="/teams/:teamId/settings" element={<TeamSettings />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
         </Route>
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="/not-found" element={<NotFound />} />

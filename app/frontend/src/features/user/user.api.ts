@@ -2,7 +2,7 @@ import { apiRequest } from '@/api/client'
 import type { ApiUserResponse, MeChangePasswordPayload, MeResponse, MeUpdatePayload } from '@/features/user/user.types'
 
 export function getMe() {
-  return apiRequest<MeResponse>('/users/me', {
+  return apiRequest<MeResponse>('/me', {
     method: 'GET',
   })
 }

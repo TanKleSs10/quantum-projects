@@ -4,28 +4,23 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
 import TaskListItem from '@/components/tasks/TaskListItem'
-import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { useTasksByUser } from '@/features/tasks/tasks.hooks'
 import { useAuthStore } from '@/store/auth.store'
 
 export default function Tasks() {
-  const user = useAuthStore((state) => state.user)
   const tasksQuery = useTasksByUser()
   const tasks = tasksQuery.data?.data ?? []
+  const user = useAuthStore((state) => state.user)
 
   return (
-    <DashboardLayout
-      title="Tasks"
-      userName={user?.name ?? ''}
-      userEmail={user?.email ?? ''}
-    >
+    <>
       <section>
         <PageHeader
           title="Tasks"
           description="Track and update tasks across your projects."
           action={(
-            <Link to="/tasks/create">
-              <Button variant="primary">+ New task</Button>
+            <Link to="/projects">
+              <Button variant="primary">Create task</Button>
             </Link>
           )}
         />
@@ -43,7 +38,7 @@ export default function Tasks() {
                     title={task.title}
                     status={task.status}
                     priority={task.priority}
-                    assignee={task.assigneeId}
+                    assignee={user?.name ? `${user.name} (you)` : task.assigneeId}
                     dueDate={task.dueDate}
                   />
                 </Link>
@@ -52,16 +47,16 @@ export default function Tasks() {
           ) : (
             <EmptyState
               title="No tasks yet"
-              description="Create your first task to get started."
+              description="Create tasks from a project to get started."
               action={(
-                <Link to="/tasks/create">
-                  <Button variant="primary">Create task</Button>
+                <Link to="/projects">
+                  <Button variant="primary">Browse projects</Button>
                 </Link>
               )}
             />
           )}
         </DashboardCard>
       </section>
-    </DashboardLayout>
+    </>
   )
 }

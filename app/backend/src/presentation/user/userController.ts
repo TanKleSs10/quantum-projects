@@ -2,14 +2,13 @@ import { Request, Response } from "express";
 import { ILogger } from "@src/interfaces/Logger";
 import { ISecurityService } from "@src/domain/services/ISecurityService";
 import { IUserRepository } from "@src/domain/repositories/IUserRepository";
-import { GetAllUsersUseCase } from "@src/application/usecases/user/GetAllUsersUseCase";
-import { GetUserByIdUseCase } from "@src/application/usecases/user/GetUserByIdUseCase";
-import { GetUserByEmailUseCase } from "@src/application/usecases/user/GetUserByEmailUseCase";
 import { UpdateUserSchema } from "@src/domain/dtos/UpdateUserDTO";
 import { DeleteUserUseCase } from "@src/application/usecases/user/DeleteUserUseCase";
 import { UpdateUserUseCase } from "@src/application/usecases/user/UpdateUserUseCase";
 import { ChangePassSchema } from "@src/domain/dtos/ChangePassDTO";
 import { ChangePassUseCase } from "@src/application/usecases/user/ChangePassUseCase";
+import { ApplicationError } from "@src/shared/errors/ApplicationError";
+import { DomainError } from "@src/shared/errors/DomainError";
 
 export class UserController {
   constructor(
@@ -17,59 +16,6 @@ export class UserController {
     private readonly securityService: ISecurityService,
     private readonly logger: ILogger,
   ) { }
-
-  getUserById = async (req: Request, res: Response) => {
-    try {
-      const userId = req.userId ? req.userId : null;
-      if (!userId) {
-        this.logger.error("User ID is required");
-        return res
-          .status(400)
-          .json({ success: false, message: "User ID is required" });
-      }
-
-      const user = await new GetUserByIdUseCase(
-        this.userRepository,
-        this.logger,
-      ).execute(userId);
-      res.status(200).json({ success: true, data: user, meessage: "User fetched successfully" });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message });
-    }
-  };
-
-  getUserByEmail = async (req: Request, res: Response) => {
-    try {
-      const email = req.params.email;
-      if (!email) {
-        this.logger.error("Email is required");
-        return res
-          .status(400)
-          .json({ success: false, message: "Email is required" });
-      }
-
-      const user = await new GetUserByEmailUseCase(
-        this.userRepository,
-        this.logger,
-      ).execute(email);
-      res.status(200).json({ success: true, data: user });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message });
-    }
-  };
-
-  getAllUsers = async (_req: Request, res: Response) => {
-    try {
-      const users = await new GetAllUsersUseCase(
-        this.userRepository,
-        this.logger,
-      ).execute();
-      res.status(200).json({ success: true, data: users });
-    } catch (error: any) {
-      this.logger.error("Error fetching users", error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  };
 
   updateUser = async (req: Request, res: Response) => {
     try {
@@ -95,9 +41,9 @@ export class UserController {
         this.securityService,
         this.logger,
       ).execute(userId, updateData.data!);
-      res.status(200).json({ success: true, data: user });
+      return res.status(200).json({ success: true, data: user });
     } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message });
+      return this.handleError(res, error);
     }
   };
 
@@ -137,13 +83,12 @@ export class UserController {
         this.securityService,
         this.logger,
       ).execute(parsed.data);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Password changed successfully",
       });
     } catch (error: any) {
-      this.logger.error("Error changing password", error);
-      res.status(500).json({ success: false, message: error.message });
+      return this.handleError(res, error);
     }
   };
 
@@ -158,12 +103,26 @@ export class UserController {
       await new DeleteUserUseCase(this.userRepository, this.logger).execute(
         userId,
       );
-      res
+      return res
         .status(200)
         .json({ success: true, message: "User deleted successfully" });
     } catch (error: any) {
-      this.logger.error("Error deleting user", error);
-      res.status(500).json({ success: false, message: error.message });
+      return this.handleError(res, error);
     }
   };
+
+  private handleError(res: Response, error: unknown) {
+    if (error instanceof DomainError) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
+    if (error instanceof ApplicationError) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    this.logger.error("Unexpected user error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
 }
