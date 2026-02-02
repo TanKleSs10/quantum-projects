@@ -1,54 +1,108 @@
-# Quantum Projects
+# 🚀 Quantum Projects
 
-Plataforma full-stack para gestion de proyectos con equipos, tareas y metricas.
-Monorepo con backend (Express + TypeScript) y frontend (React + Vite).
+**Quantum Projects** es una **plataforma full-stack de gestión de proyectos** orientada a equipos que necesitan **organización clara, control de tareas y métricas accionables** para tomar mejores decisiones.
 
-## Caracteristicas (MVP)
+El proyecto está diseñado como un **monorepo**, con un backend robusto y un frontend moderno, pensado para evolucionar de **MVP funcional** a **producto SaaS escalable**.
 
-- Autenticacion con cookies httpOnly.
-- Equipos con roles (owner/admin/member).
-- Proyectos por equipo con estados y archivado.
-- Tareas por proyecto con asignacion y flujo de estado.
-- Dashboard con metricas y resumenes.
+---
 
-## Estructura
+## 🧠 Visión del proyecto
 
-```
+* Centralizar **proyectos, tareas y equipos** en una sola plataforma
+* Ofrecer **visibilidad real** mediante métricas y resúmenes
+* Mantener una **arquitectura limpia y mantenible**
+* Priorizar **seguridad y buenas prácticas** desde el inicio
+
+---
+
+## 🔐 Vista de Login
+
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/b49e83b0-5ac1-4846-b279-4b6c2502aecf" />
+
+---
+
+## 📊 Vista de Dashboard
+
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/2303e51e-48d7-4cdc-a3d3-8516d51bab1a" />
+
+---
+
+## ✨ Características (MVP)
+
+* Autenticación segura mediante **cookies httpOnly**
+* Gestión de **equipos con roles** (`owner`, `admin`, `member`)
+* **Proyectos por equipo** con estados y archivado
+* **Tareas por proyecto** con asignación y flujo de estados
+* **Dashboard** con métricas clave y resúmenes de actividad
+* Arquitectura preparada para crecimiento funcional
+
+---
+
+## 🗂️ Estructura del proyecto
+
+```txt
 app/
   backend/   # API principal (Clean Architecture)
   frontend/  # SPA (React + Vite)
 ```
 
-## Stack
+Separación clara entre **dominio, infraestructura y presentación**, facilitando mantenimiento y escalabilidad.
 
-- Backend: Express, TypeScript, MongoDB.
-- Frontend: React, Vite, TypeScript, TanStack Query, Zustand.
-- Auth: cookies httpOnly (sin tokens en JS).
+---
 
-## Requisitos
+## 🛠️ Stack tecnológico
 
-- Node.js (version acorde a cada proyecto)
-- Docker + Docker Compose (opcional)
+### Backend
 
-## Configuracion rapida (Docker Compose)
+* Express
+* TypeScript
+* MongoDB
+* Arquitectura limpia (Clean Architecture)
 
-1. Crea `.env` a partir de `.env-template` y completa variables.
-2. Levanta todo el stack:
+### Frontend
+
+* React
+* Vite
+* TypeScript
+* TanStack Query
+* Zustand
+
+### Autenticación
+
+* Cookies **httpOnly**
+* Sin tokens accesibles desde JavaScript
+
+---
+
+## ⚙️ Requisitos
+
+* Node.js (versión acorde a cada subproyecto)
+* Docker + Docker Compose (opcional, recomendado)
+
+---
+
+## 🚀 Configuración rápida (Docker Compose)
+
+1. Crear el archivo `.env` a partir de `.env-template` y completar las variables.
+2. Levantar todo el stack:
 
 ```bash
 docker compose up --build
 ```
 
-Servicios:
-- API: `http://localhost:4000`
-- Frontend: `http://localhost:5173`
-- MongoDB: `mongodb://localhost:27017`
-- Grafana: `http://localhost:3000`
-- Loki: `http://localhost:3100`
+### Servicios disponibles
 
-## Desarrollo local (sin Docker)
+* **API:** [http://localhost:4000](http://localhost:4000)
+* **Frontend:** [http://localhost:5173](http://localhost:5173)
+* **MongoDB:** mongodb://localhost:27017
+* **Grafana:** [http://localhost:3000](http://localhost:3000)
+* **Loki:** [http://localhost:3100](http://localhost:3100)
 
-Backend:
+---
+
+## 💻 Desarrollo local (sin Docker)
+
+### Backend
 
 ```bash
 cd app/backend
@@ -56,7 +110,7 @@ npm install
 npm run dev
 ```
 
-Frontend:
+### Frontend
 
 ```bash
 cd app/frontend
@@ -64,20 +118,36 @@ npm install
 npm run dev
 ```
 
-## Documentacion (centralizada en /docs)
+---
 
-Backend:
-- `docs/backend/PROJECT.md`
-- `docs/backend/api-endpoints.md`
-- `docs/backend/branching.md`
-- `docs/backend/e2e-warnings.md`
+## 📚 Documentación
 
-Frontend:
-- `docs/frontend/CONTEXT.md`
-- `docs/frontend/CONTRIBUTING.md`
-- `docs/frontend/api-endpoints.md`
+Toda la documentación está centralizada en la carpeta `/docs`.
 
-Notas tecnicas:
-- `docs/notes/PROJECT_STATUS_NOTE.md`
-- `docs/notes/TASK_STATUS_NOTE.md`
-- `docs/notes/BACKEND_GAPS.md`
+### Backend
+
+* `docs/backend/PROJECT.md`
+* `docs/backend/api-endpoints.md`
+* `docs/backend/branching.md`
+* `docs/backend/e2e-warnings.md`
+
+### Frontend
+
+* `docs/frontend/CONTEXT.md`
+* `docs/frontend/CONTRIBUTING.md`
+* `docs/frontend/api-endpoints.md`
+
+### Notas técnicas
+
+* `docs/notes/PROJECT_STATUS_NOTE.md`
+* `docs/notes/TASK_STATUS_NOTE.md`
+* `docs/notes/BACKEND_GAPS.md`
+
+---
+
+## 🎯 Estado del proyecto
+
+* MVP funcional en desarrollo activo
+* Arquitectura validada para escalar
+* Enfoque en calidad, claridad y métricas reales
+
