@@ -4,53 +4,33 @@ import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import MetricCard from '@/components/MetricCard'
 import ProjectItem from '@/components/ProjectItem'
-import TaskItem from '@/components/TaskItem'
+import { useMetricsOverview, useTaskMetrics } from '@/features/metrics/metrics.hooks'
+import { useGetProjectsByUser } from '@/features/projects/projects.hooks'
+import { useTasksByUser } from '@/features/tasks/tasks.hooks'
 import { useAuthStore } from '@/store/auth.store'
+import { formatDate } from '@/utils/format-date'
 import { useNavigate } from 'react-router'
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user)
-  const projects = [
-    {
-      name: 'Client Onboarding',
-      status: 'active' as const,
-      tags: ['Q1', 'Priority'],
-      due: 'Apr 18',
-    },
-    {
-      name: 'Market Expansion',
-      status: 'paused' as const,
-      tags: ['Research'],
-      due: 'May 2',
-    },
-    {
-      name: 'Mobile Experience',
-      status: 'completed' as const,
-      tags: ['Release'],
-    },
-  ]
-  const deadlines: Array<{ title: string; due: string }> = []
-  const taskBoard = {
-    todo: [
-      { title: 'Draft kickoff agenda', priority: 'low' as const },
-      { title: 'Outline sprint goals', priority: 'medium' as const },
-    ],
-    inProgress: [
-      { title: 'Sync with design team', priority: 'high' as const },
-      { title: 'QA core workflows', priority: 'medium' as const },
-    ],
-    completed: [
-      { title: 'Update roadmap notes', priority: 'low' as const },
-      { title: 'Share weekly recap', priority: 'low' as const },
-    ],
-  }
-  const activity = [
-    { name: 'Andrea', action: 'joined the Growth team.', time: '2h ago' },
-    { name: 'Miguel', action: 'completed Design review.', time: '4h ago' },
-    { name: 'Sofia', action: 'commented on Launch plan.', time: '6h ago' },
-  ]
-
   const navigate = useNavigate()
+
+  const overviewQuery = useMetricsOverview()
+  const taskMetricsQuery = useTaskMetrics()
+  const projectsQuery = useGetProjectsByUser()
+  const tasksQuery = useTasksByUser()
+
+  const projects = projectsQuery.data?.data ?? []
+  const tasks = tasksQuery.data?.data ?? []
+  const overview = overviewQuery.data?.data
+  const taskMetrics = taskMetricsQuery.data?.data
+
+  const upcomingDeadlines = tasks
+    .filter((task) => task.dueDate)
+    .sort((a, b) => new Date(a.dueDate ?? 0).getTime() - new Date(b.dueDate ?? 0).getTime())
+    .slice(0, 4)
+
+  const activity = []
 
   return (
     <>
@@ -64,56 +44,77 @@ export default function Dashboard() {
               Here&apos;s an overview of your projects and tasks.
             </p>
           </div>
-          <Button variant="primary" onClick={() => navigate("/projects/create")}>+ New project</Button>
+          <Button variant="primary" onClick={() => navigate('/teams')}>Create project</Button>
         </div>
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Active projects"
-          value="12"
-          caption="+2 this week"
+          value={overview ? String(overview.project.status.active) : '—'}
+          caption="Based on your teams"
+        />
+        <MetricCard
+          label="Tasks total"
+          value={taskMetrics ? String(taskMetrics.total) : '—'}
+          caption="Across your assignments"
         />
         <MetricCard
           label="Tasks in progress"
-          value="48"
-          caption="74% on track"
+          value={taskMetrics ? String(taskMetrics.byStatus.in_progress) : '—'}
+          caption="Currently active"
         />
         <MetricCard
-          label="Pending reviews"
-          value="7"
-          caption="3 need attention"
-        />
-        <MetricCard
-          label="Completed tasks"
-          value="128"
-          caption="+18 this month"
+          label="Overdue tasks"
+          value={taskMetrics ? String(taskMetrics.overdue) : '—'}
+          caption="Needs attention"
         />
       </section>
 
       <section className="mt-8 grid gap-4 lg:grid-cols-[2fr_1fr]">
         <DashboardCard
-          title="My Projects"
-          description="Your most active initiatives this week."
-          action={<Button variant="outline" size="sm">View all</Button>}
+          title="My projects"
+          description="Your most active initiatives."
+          action={(
+            <Button variant="outline" size="sm" onClick={() => navigate('/projects')}>
+              View all
+            </Button>
+          )}
         >
-          {projects.length ? (
+          {projectsQuery.isLoading ? (
+            <p className="text-sm text-muted">Loading projects...</p>
+          ) : projectsQuery.isError ? (
+            <EmptyState
+              title="Unable to load projects"
+              description="Try again in a moment."
+              action={(
+                <Button variant="outline" onClick={() => projectsQuery.refetch()}>
+                  Retry
+                </Button>
+              )}
+            />
+          ) : projects.length ? (
             <div className="space-y-3">
-              {projects.map((project) => (
+              {projects.slice(0, 4).map((project) => (
                 <ProjectItem
-                  key={project.name}
+                  key={project.id}
                   name={project.name}
                   status={project.status}
                   tags={project.tags}
-                  due={project.due}
+                  due={project.deadline}
+                  href={`/projects/${project.id}`}
                 />
               ))}
             </div>
           ) : (
             <EmptyState
               title="No projects yet"
-              description="Create your first project to start tracking work."
-              action={<Button variant="primary">Create project</Button>}
+              description="Create a project from a team to start tracking work."
+              action={(
+                <Button variant="primary" onClick={() => navigate('/teams')}>
+                  Browse teams
+                </Button>
+              )}
             />
           )}
         </DashboardCard>
@@ -122,16 +123,18 @@ export default function Dashboard() {
           title="Upcoming deadlines"
           description="Tasks that need attention soon."
         >
-          {deadlines.length ? (
+          {tasksQuery.isLoading ? (
+            <p className="text-sm text-muted">Loading tasks...</p>
+          ) : upcomingDeadlines.length ? (
             <div className="space-y-3">
-              {deadlines.map((item) => (
+              {upcomingDeadlines.map((item) => (
                 <div
-                  key={item.title}
+                  key={item.id}
                   className="flex items-center justify-between rounded-md border border-border bg-base px-3 py-2 transition-colors hover:border-secondary"
                 >
                   <div>
                     <p className="text-sm text-main">{item.title}</p>
-                    <p className="mt-1 text-xs text-muted">Due {item.due}</p>
+                    <p className="mt-1 text-xs text-muted">Due {formatDate(item.dueDate)}</p>
                   </div>
                   <span className="h-4 w-4 rounded border border-border" />
                 </div>
@@ -147,65 +150,37 @@ export default function Dashboard() {
       </section>
 
       <section className="mt-8 grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <DashboardCard title="Task overview" description="Lightweight board for focus.">
-          {taskBoard.todo.length || taskBoard.inProgress.length || taskBoard.completed.length ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="mb-3 text-xs uppercase tracking-wide text-muted">To do</p>
-                <div className="space-y-2">
-                  {taskBoard.todo.length ? (
-                    taskBoard.todo.map((task) => (
-                      <TaskItem key={task.title} title={task.title} priority={task.priority} />
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No tasks"
-                      description="Add tasks to keep work moving."
-                    />
-                  )}
-                </div>
+        <DashboardCard title="Task overview" description="Live status counts across your tasks.">
+          {taskMetricsQuery.isLoading ? (
+            <p className="text-sm text-muted">Loading task metrics...</p>
+          ) : taskMetrics ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-md border border-border bg-base px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-muted">To do</p>
+                <p className="mt-2 text-2xl font-semibold text-main">{taskMetrics.byStatus.todo}</p>
               </div>
-              <div>
-                <p className="mb-3 text-xs uppercase tracking-wide text-muted">In progress</p>
-                <div className="space-y-2">
-                  {taskBoard.inProgress.length ? (
-                    taskBoard.inProgress.map((task) => (
-                      <TaskItem key={task.title} title={task.title} priority={task.priority} />
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No tasks"
-                      description="Everything is currently clear."
-                    />
-                  )}
-                </div>
+              <div className="rounded-md border border-border bg-base px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-muted">In progress</p>
+                <p className="mt-2 text-2xl font-semibold text-main">{taskMetrics.byStatus.in_progress}</p>
               </div>
-              <div>
-                <p className="mb-3 text-xs uppercase tracking-wide text-muted">Completed</p>
-                <div className="space-y-2">
-                  {taskBoard.completed.length ? (
-                    taskBoard.completed.map((task) => (
-                      <TaskItem
-                        key={task.title}
-                        title={task.title}
-                        priority={task.priority}
-                        done
-                      />
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No completions yet"
-                      description="Finish a task to see progress."
-                    />
-                  )}
-                </div>
+              <div className="rounded-md border border-border bg-base px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-muted">Blocked</p>
+                <p className="mt-2 text-2xl font-semibold text-main">{taskMetrics.byStatus.blocked}</p>
+              </div>
+              <div className="rounded-md border border-border bg-base px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-muted">Done</p>
+                <p className="mt-2 text-2xl font-semibold text-main">{taskMetrics.byStatus.done}</p>
               </div>
             </div>
           ) : (
             <EmptyState
-              title="No tasks yet"
-              description="Create your first task to get started."
-              action={<Button variant="primary">Create task</Button>}
+              title="No task metrics yet"
+              description="Create tasks to see status breakdowns."
+              action={(
+                <Button variant="primary" onClick={() => navigate('/projects')}>
+                  Browse projects
+                </Button>
+              )}
             />
           )}
         </DashboardCard>
