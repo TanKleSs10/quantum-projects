@@ -26,7 +26,7 @@ describe("Task entity", () => {
     expect(task.status).toBe("in_progress");
   });
 
-  it("blocks invalid status transitions", () => {
+  it("allows returning to previous statuses", () => {
     const task = new Task({
       id: "task-1",
       title: "Task",
@@ -35,6 +35,21 @@ describe("Task entity", () => {
       status: "done",
     });
 
-    expect(() => task.changeStatus("todo")).toThrow(DomainError);
+    task.changeStatus("in_progress");
+    expect(task.status).toBe("in_progress");
+
+    task.changeStatus("todo");
+    expect(task.status).toBe("todo");
+  });
+
+  it("blocks invalid status values", () => {
+    const task = new Task({
+      id: "task-1",
+      title: "Task",
+      projectId: "project-1",
+      createdBy: "user-1",
+    });
+
+    expect(() => task.changeStatus("invalid" as any)).toThrow(DomainError);
   });
 });

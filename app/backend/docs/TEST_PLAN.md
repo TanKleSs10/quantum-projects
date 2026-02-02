@@ -36,5 +36,10 @@ Plan de implementacion de pruebas para endpoints nuevos/actualizados.
 - `DeleteTaskUseCase`: owner/admin ok, member fail.
 - `DELETE /tasks/:taskId`: endpoint.
 
-## 7) Cleanup de e2e desactualizados
+## 7) Task status transitions (unit)
+- `TaskStatus.canTransition`: permite cambios entre todos los estados.
+- `Task.changeStatus`: no falla al volver a estados previos.
+- `ChangeTaskStatusUseCase`: actualiza status valido.
+
+## 8) Cleanup de e2e desactualizados
 - Remover/actualizar tests de `PATCH /projects/:id/resume` y `/unarchive`.

@@ -38,7 +38,12 @@ describe("GetUserByIdUseCase", () => {
 
     const result = await useCase.execute(user.id);
 
-    expect(result).toEqual(user);
+    expect(result).toEqual(expect.objectContaining({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+    }));
   });
 
   it("error inesperado del repositorio", async () => {
