@@ -51,11 +51,11 @@ export default function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/projects/:projectId/task/create" element={<CreateTask />} />
             <Route path="/tasks/:taskId" element={<TaskOverview />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/teams/create" element={<CreateTeam />} />
-          <Route path="/teams/:teamId" element={<TeamOverview />} />
-          <Route path="/teams/:teamId/members" element={<TeamMembers />} />
-          <Route path="/teams/:teamId/settings" element={<TeamSettings />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/create" element={<CreateTeam />} />
+            <Route path="/teams/:teamId" element={<TeamOverview />} />
+            <Route path="/teams/:teamId/members" element={<TeamMembers />} />
+            <Route path="/teams/:teamId/settings" element={<TeamSettings />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>

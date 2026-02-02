@@ -16,27 +16,8 @@ export function createTask(projectId: string, payload: CreateTaskPayload) {
   })
 }
 
-export function getTasksByProject(
-  projectId: string,
-  params: ListTasksByProjectParams = {}
-) {
-  const searchParams = new URLSearchParams()
-  if (params.status) {
-    searchParams.set('status', params.status)
-  }
-  if (params.priority) {
-    searchParams.set('priority', params.priority)
-  }
-  if (params.assigneeId) {
-    searchParams.set('assigneeId', params.assigneeId)
-  }
-
-  const query = searchParams.toString()
-  const endpoint = query
-    ? `/projects/${projectId}/tasks?${query}`
-    : `/projects/${projectId}/tasks`
-
-  return apiRequest<TaskListResponse>(endpoint, {
+export function getTasksByProject(projectId: string) {
+  return apiRequest<TaskListResponse>(`/projects/${projectId}/tasks`, {
     method: 'GET',
   })
 }

@@ -5,7 +5,6 @@ export const updateProjectSchema = z.object({
   description: z.string().max(1000).optional(),
   tags: z.string().optional(),
   deadline: z.string().optional(),
-  teamId: z.string().min(1, 'Team is required'),
 })
 
 export type UpdateProjectSchema = z.infer<typeof updateProjectSchema>

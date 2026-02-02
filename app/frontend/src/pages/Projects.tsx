@@ -17,11 +17,11 @@ export default function Projects() {
         <PageHeader
           title="Projects"
           description="All projects you collaborate on."
-          action={
-            <Button variant="primary" onClick={() => navigate('/projects/create')}>
-              + Create project
+          action={(
+            <Button variant="primary" onClick={() => navigate('/teams')}>
+              Create project
             </Button>
-          }
+          )}
         />
       </section>
 
@@ -58,10 +58,10 @@ export default function Projects() {
           ) : (
             <EmptyState
               title="No projects yet"
-              description="Create a project to start tracking work."
+              description="Create a project from a team to start tracking work."
               action={
-                <Button variant="primary" onClick={() => navigate('/projects/create')}>
-                  Create project
+                <Button variant="primary" onClick={() => navigate('/teams')}>
+                  Browse teams
                 </Button>
               }
             />

@@ -1,13 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
 import PageHeader from '@/components/PageHeader'
+import Modal from '@/components/Modal'
 import TaskPriorityBadge from '@/components/tasks/TaskPriorityBadge'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
-import { useChangeTaskStatus, useTaskById } from '@/features/tasks/tasks.hooks'
+import { useChangeTaskStatus, useTaskById, useAssignTask } from '@/features/tasks/tasks.hooks'
+import { useProjectById } from '@/features/projects/projects.hooks'
+import { useTeamById } from '@/features/team/team.hooks'
+import { useAuthStore } from '@/store/auth.store'
 import { toastClient } from '@/utils/toast'
 import { useLayoutStore } from '@/store/layout.store'
 import { formatDate } from '@/utils/format-date'
@@ -18,12 +22,26 @@ export default function TaskOverview() {
   const taskQuery = useTaskById(taskId)
   const task = taskQuery.data?.data
   const changeStatusMutation = useChangeTaskStatus(taskId || '')
+  const assignTaskMutation = useAssignTask(taskId || '')
+  const projectQuery = useProjectById(task?.projectId)
+  const teamQuery = useTeamById(projectQuery.data?.data?.teamId)
   const setPageTitle = useLayoutStore((state) => state.setPageTitle)
+  const user = useAuthStore((state) => state.user)
+  const [isReassignOpen, setIsReassignOpen] = useState(false)
+  const [assigneeId, setAssigneeId] = useState('')
+  const members = useMemo(() => teamQuery.data?.data.members ?? [], [teamQuery.data])
+  const hasMembers = members.length > 1
 
   useEffect(() => {
     setPageTitle(task?.title ?? 'Task')
     return () => setPageTitle(null)
   }, [setPageTitle, task?.title])
+
+  const role = useMemo(() => {
+    return members.find((member) => member.userId === user?.id)?.role
+  }, [members, user?.id])
+
+  const canManage = role === 'owner' || role === 'admin'
 
   const handleMarkDone = () => {
     if (!taskId) {
@@ -43,6 +61,36 @@ export default function TaskOverview() {
         },
       }
     )
+  }
+
+  const handleReassign = () => {
+    if (!taskId) {
+      return
+    }
+    if (!assigneeId) {
+      toastClient.error('Select a member to assign')
+      return
+    }
+
+    assignTaskMutation.mutate(
+      { assigneeId },
+      {
+        onSuccess: () => {
+          toastClient.success('Task reassigned')
+          queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+          queryClient.invalidateQueries({ queryKey: ['tasks'] })
+          setIsReassignOpen(false)
+        },
+        onError: (error) => {
+          toastClient.error(error.message || 'Failed to reassign task')
+        },
+      }
+    )
+  }
+
+  const openReassignModal = () => {
+    setAssigneeId(task?.assigneeId ?? '')
+    setIsReassignOpen(true)
   }
 
   return (
@@ -76,7 +124,18 @@ export default function TaskOverview() {
               )}
               <div className="rounded-md border border-border bg-base px-4 py-3 text-sm">
                 <p className="text-secondary">Assignee</p>
-                <p className="mt-1 text-main">{task.assigneeId ?? 'Unassigned'}</p>
+                <p className="mt-1 text-main">
+                  {task.assigneeId
+                    ? (() => {
+                      const assignee = members.find((member) => member.userId === task.assigneeId)
+                      const assigneeName = assignee?.user?.name
+                      if (assigneeName && assignee?.userId === user?.id) {
+                        return `${assigneeName} (you)`
+                      }
+                      return assigneeName ?? task.assigneeId
+                    })()
+                    : 'Unassigned'}
+                </p>
               </div>
               <div className="rounded-md border border-border bg-base px-4 py-3 text-sm">
                 <p className="text-secondary">Due date</p>
@@ -102,7 +161,12 @@ export default function TaskOverview() {
             >
               {task?.status === 'done' ? 'Completed' : 'Mark as done'}
             </Button>
-            <Button variant="outline" className="w-full" disabled>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={openReassignModal}
+              disabled={!task || !canManage || !hasMembers}
+            >
               Reassign
             </Button>
             <Button variant="ghost" className="w-full" disabled>
@@ -111,6 +175,48 @@ export default function TaskOverview() {
           </div>
         </DashboardCard>
       </section>
+
+      <Modal isOpen={isReassignOpen} onClose={() => setIsReassignOpen(false)}>
+        <div>
+          <h2 className="text-lg font-semibold text-main">Reassign task</h2>
+          <p className="mt-2 text-sm text-muted">
+            Select a team member to assign this task.
+          </p>
+          <div className="mt-4">
+            <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="assignee">
+              Team member
+            </label>
+            <select
+              id="assignee"
+              className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+              value={assigneeId}
+              onChange={(event) => setAssigneeId(event.target.value)}
+            >
+              <option value="">Select assignee</option>
+              {members.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {member.user?.name ?? member.userId}
+                </option>
+              ))}
+            </select>
+            {!hasMembers ? (
+              <p className="mt-2 text-sm text-danger">No team members available.</p>
+            ) : null}
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsReassignOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleReassign}
+              disabled={assignTaskMutation.isPending || !assigneeId}
+            >
+              {assignTaskMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
         <DashboardCard title="Notes">

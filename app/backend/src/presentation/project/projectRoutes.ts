@@ -55,12 +55,8 @@ export class ProjectRoutes {
     );
 
     router.use(
-      "/:id/tasks",
-      validateObjectIdParam("id"),
-      (req, _res, next) => {
-        req.params.projectId = req.params.id;
-        next();
-      },
+      "/:projectId/tasks",
+      validateObjectIdParam("projectId"),
       TaskRoutes.projectRoutes,
     );
 

@@ -12,7 +12,6 @@ import {
   getProjectsByTeamId,
   getProjectsByUser,
   pauseProject,
-  resumeProject,
   updateProject,
 } from '@/features/projects/projects.api'
 import type { GetProjectsResponse } from '@/features/projects/projects.types'
@@ -58,12 +57,6 @@ export const useUpdateProject = (projectId: string) => {
 export const usePauseProject = (projectId: string) => {
   return useMutation({
     mutationFn: () => pauseProject(projectId),
-  })
-}
-
-export const useResumeProject = (projectId: string) => {
-  return useMutation({
-    mutationFn: () => resumeProject(projectId),
   })
 }
 

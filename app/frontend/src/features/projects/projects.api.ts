@@ -37,19 +37,13 @@ export function getProjectById(projectId: string) {
 
 export function updateProject(projectId: string, payload: UpdateProjectPayload) {
   return apiRequest<GetProjectResponse>(`/projects/${projectId}`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(payload),
   })
 }
 
 export function pauseProject(projectId: string) {
   return apiRequest<GetProjectResponse>(`/projects/${projectId}/pause`, {
-    method: 'PATCH',
-  })
-}
-
-export function resumeProject(projectId: string) {
-  return apiRequest<GetProjectResponse>(`/projects/${projectId}/resume`, {
     method: 'PATCH',
   })
 }

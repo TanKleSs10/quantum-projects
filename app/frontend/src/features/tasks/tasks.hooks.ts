@@ -32,7 +32,7 @@ export const useTasksByProject = (
       if (!projectId) {
         return Promise.reject(new Error('Missing projectId'))
       }
-      return getTasksByProject(projectId, filters)
+      return getTasksByProject(projectId)
     },
     enabled: Boolean(projectId),
   })

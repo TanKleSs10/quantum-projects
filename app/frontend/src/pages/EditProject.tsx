@@ -8,17 +8,16 @@ import InputText from '@/components/InputText'
 import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
 import { useProjectById, useUpdateProject } from '@/features/projects/projects.hooks'
-import { useGetTeams } from '@/features/team/team.hooks'
 import { updateProjectSchema, type UpdateProjectSchema } from '@/schemas/projects/update-project.schema'
+import { useLayoutStore } from '@/store/layout.store'
 import { toastClient } from '@/utils/toast'
 
 export default function EditProject() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { data: teamsData } = useGetTeams()
-  const teams = teamsData?.data ?? []
   const projectQuery = useProjectById(projectId)
   const updateProjectMutation = useUpdateProject(projectId ?? '')
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
 
   const {
     register,
@@ -41,9 +40,14 @@ export default function EditProject() {
       description: project.description ?? '',
       tags: project.tags?.join(', ') ?? '',
       deadline: project.deadline ?? '',
-      teamId: project.teamId,
     })
   }, [projectQuery.data, reset])
+
+  useEffect(() => {
+    const projectName = projectQuery.data?.data?.name
+    setPageTitle(projectName ? `Edit project - ${projectName}` : 'Edit project')
+    return () => setPageTitle(null)
+  }, [projectQuery.data?.data?.name, setPageTitle])
 
   const handleFormSubmit = handleSubmit((data) => {
     const tags = data.tags
@@ -56,7 +60,6 @@ export default function EditProject() {
         description: data.description?.trim() || undefined,
         tags,
         deadline: data.deadline || undefined,
-        teamId: data.teamId,
       },
       {
         onSuccess: () => {
@@ -108,32 +111,12 @@ export default function EditProject() {
               {...register('tags')}
               error={errors.tags?.message}
             />
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="teamId">
-                  Team
-                </label>
-                <select
-                  id="teamId"
-                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  {...register('teamId')}
-                >
-                  <option value="">Select a team</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
-                {errors.teamId ? (
-                  <p className="mt-1 text-sm text-danger">{errors.teamId.message}</p>
-                ) : null}
-              </div>
-              <InputText
-                label="Deadline (optional)"
-                type="date"
-                {...register('deadline')}
-                error={errors.deadline?.message}
-              />
-            </div>
+            <InputText
+              label="Deadline (optional)"
+              type="date"
+              {...register('deadline')}
+              error={errors.deadline?.message}
+            />
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Link to={`/projects/${projectId ?? ''}`}>
                 <Button type="button" variant="ghost">Cancel</Button>
