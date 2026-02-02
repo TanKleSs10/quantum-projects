@@ -76,6 +76,12 @@ export class ProjectRoutes {
     );
 
     router.use(authMiddleware);
+    router.use((req, _res, next) => {
+      if (!req.params.teamId && req.params.id) {
+        req.params.teamId = req.params.id;
+      }
+      next();
+    });
     router.use(validateObjectIdParam("teamId"));
     router.post("/", asyncHandler(controller.createProject));
     router.get("/", asyncHandler(controller.listProjectsByTeam));

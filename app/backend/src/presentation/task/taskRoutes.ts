@@ -65,7 +65,12 @@ export class TaskRoutes {
     );
 
     router.use(authMiddleware);
-    router.use(validateObjectIdParam("teamId"));
+    router.use((req, _res, next) => {
+      if (!req.params.teamId && req.params.id) {
+        req.params.teamId = req.params.id;
+      }
+      next();
+    });
     router.get("/", asyncHandler(controller.listTasksByTeam));
 
     return router;
