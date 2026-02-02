@@ -12,6 +12,7 @@ import {
   getProjectsByTeamId,
   getProjectsByUser,
   pauseProject,
+  reopenProject,
   updateProject,
 } from '@/features/projects/projects.api'
 import type { GetProjectsResponse } from '@/features/projects/projects.types'
@@ -69,6 +70,12 @@ export const useCompleteProject = (projectId: string) => {
 export const useArchiveProject = (projectId: string) => {
   return useMutation({
     mutationFn: () => archiveProject(projectId),
+  })
+}
+
+export const useReopenProject = (projectId: string) => {
+  return useMutation({
+    mutationFn: () => reopenProject(projectId),
   })
 }
 

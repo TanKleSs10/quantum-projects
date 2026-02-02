@@ -34,4 +34,4 @@ Frontend behavior
 Notes
 
 - This proposal reduces inconsistencies and makes the API clearer.
-- It should be applied after backend refactor to avoid breaking clients.
+- Implemented in backend (status + archived flag + reopen).

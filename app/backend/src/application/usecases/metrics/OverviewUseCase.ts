@@ -9,12 +9,12 @@ type OverviewMetrics = {
   project: {
     desc: string;
     totalCount: number;
-    status: {
-      active: number;
-      paused: number;
-      completed: number;
-      archived: number;
-    },
+      status: {
+        active: number;
+        paused: number;
+        completed: number;
+        archived: number;
+      },
     overdue: number;
   };
   task: {
@@ -70,10 +70,10 @@ export class OverviewUseCase implements IOverviewUseCase {
       ).execute(userId);
       const projectCount = projects.length;
       const projectStatusCounts = {
-        active: projects.filter(p => p.status === "active").length,
-        paused: projects.filter(p => p.status === "paused").length,
-        completed: projects.filter(p => p.status === "completed").length,
-        archived: projects.filter(p => p.status === "archived").length,
+        active: projects.filter(p => p.status === "active" && !p.archived).length,
+        paused: projects.filter(p => p.status === "paused" && !p.archived).length,
+        completed: projects.filter(p => p.status === "completed" && !p.archived).length,
+        archived: projects.filter(p => p.archived).length,
       };
       const overdueProjects = projects.filter(p => p.deadline && p.deadline < new Date()).length;
       const projectDesc = "Total number of projects the user is involved in";

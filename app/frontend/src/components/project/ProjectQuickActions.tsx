@@ -9,6 +9,7 @@ import {
   useDeleteProject,
   usePauseProject,
   useProjectById,
+  useReopenProject,
 } from '@/features/projects/projects.hooks'
 import { toastClient } from '@/utils/toast'
 import Modal from '../Modal'
@@ -24,14 +25,16 @@ export default function ProjectQuickActions({ projectId, canManage }: ProjectQui
   const pauseMutation = usePauseProject(projectId)
   const completeMutation = useCompleteProject(projectId)
   const archiveMutation = useArchiveProject(projectId)
+  const reopenMutation = useReopenProject(projectId)
   const deleteMutation = useDeleteProject(projectId)
   const [isOpen, setIsOpen] = useState(false)
 
-  const handleStatusChange = (action: 'pause' | 'complete' | 'archive') => {
+  const handleStatusChange = (action: 'pause' | 'complete' | 'archive' | 'reopen') => {
     const mutationMap = {
       pause: pauseMutation,
       complete: completeMutation,
       archive: archiveMutation,
+      reopen: reopenMutation,
     }
 
     mutationMap[action].mutate(undefined, {
@@ -125,7 +128,17 @@ export default function ProjectQuickActions({ projectId, canManage }: ProjectQui
               Mark as complete
             </Button>
           ) : null}
-          {project.status !== 'archived' ? (
+          {project.status === 'completed' ? (
+            <Button
+              variant="outline"
+              className="mt-2 w-full"
+              onClick={() => handleStatusChange('reopen')}
+              disabled={reopenMutation.isPending || !canManage}
+            >
+              Reopen project
+            </Button>
+          ) : null}
+          {!project.archived ? (
             <Button
               variant="ghost"
               className="mt-2 w-full"
@@ -135,7 +148,7 @@ export default function ProjectQuickActions({ projectId, canManage }: ProjectQui
               Archive project
             </Button>
           ) : null}
-          {project.status === 'archived' ? (
+          {project.archived ? (
             <Button
               variant="ghost"
               className="mt-2 w-full"

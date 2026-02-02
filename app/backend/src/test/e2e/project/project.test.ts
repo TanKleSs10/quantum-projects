@@ -190,7 +190,7 @@ describe("Project endpoints", () => {
     project.status = ProjectStatus.PAUSED;
     projectRepository.getProjectById.mockResolvedValue(project);
 
-    const res = await agent.patch(`/api/v1/projects/${PROJECT_ID}/resume`);
+    const res = await agent.patch(`/api/v1/projects/${PROJECT_ID}/pause`);
 
     expect(res.status).toBe(200);
     expect(res.body.data.status).toBe(ProjectStatus.ACTIVE);
@@ -215,18 +215,28 @@ describe("Project endpoints", () => {
     const res = await agent.patch(`/api/v1/projects/${PROJECT_ID}/archive`);
 
     expect(res.status).toBe(200);
-    expect(res.body.data.status).toBe(ProjectStatus.ARCHIVED);
+    expect(res.body.data.archived).toBe(true);
   });
 
-  it("unarchives a project", async () => {
-    const project = new Project(PROJECT_ID, "Project Alpha", TEAM_ID, "user-1");
-    project.status = ProjectStatus.ARCHIVED;
+  it("reopens a project", async () => {
+    const project = new Project(
+      PROJECT_ID,
+      "Project Alpha",
+      TEAM_ID,
+      "user-1",
+      ProjectStatus.COMPLETED,
+      undefined,
+      [],
+      undefined,
+      true,
+    );
     projectRepository.getProjectById.mockResolvedValue(project);
 
-    const res = await agent.patch(`/api/v1/projects/${PROJECT_ID}/unarchive`);
+    const res = await agent.patch(`/api/v1/projects/${PROJECT_ID}/reopen`);
 
     expect(res.status).toBe(200);
-    expect(res.body.data.status).toBe(ProjectStatus.COMPLETED);
+    expect(res.body.data.status).toBe(ProjectStatus.ACTIVE);
+    expect(res.body.data.archived).toBe(false);
   });
 
   it("deletes a project", async () => {

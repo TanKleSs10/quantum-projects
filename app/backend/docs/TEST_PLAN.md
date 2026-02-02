@@ -26,7 +26,8 @@ Plan de implementacion de pruebas para endpoints nuevos/actualizados.
 
 ## 4.1) Project status toggles (unit + e2e)
 - `PauseProjectUseCase`: alterna `active` <-> `paused`.
-- `ArchiveProjectUseCase`: alterna `completed` <-> `archived`.
+- `ArchiveProjectUseCase`: alterna `archived` flag.
+- `ReopenProjectUseCase`: `completed` -> `active` (limpia `archived`).
 
 ## 5) Tasks under project (e2e)
 - `POST /projects/:projectId/tasks`: crea tarea.
@@ -42,4 +43,4 @@ Plan de implementacion de pruebas para endpoints nuevos/actualizados.
 - `ChangeTaskStatusUseCase`: actualiza status valido.
 
 ## 8) Cleanup de e2e desactualizados
-- Remover/actualizar tests de `PATCH /projects/:id/resume` y `/unarchive`.
+- Validar que no existan tests para `PATCH /projects/:id/resume` y `/unarchive`.

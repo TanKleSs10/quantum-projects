@@ -38,7 +38,9 @@ export class TeamMetricsUseCase implements ITeamMetricsUseCase {
       const metrics = await Promise.all(
         teams.map(async (team) => {
           const projects = await this.projectRepository.getProjectsByTeamId(team.id);
-          const activeCount = projects.filter((project) => project.status === "active").length;
+          const activeCount = projects.filter(
+            (project) => project.status === "active" && !project.archived,
+          ).length;
 
           return {
             teamId: team.id,

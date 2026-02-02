@@ -6,7 +6,6 @@ export enum ProjectStatus {
   ACTIVE = "active",
   PAUSED = "paused",
   COMPLETED = "completed",
-  ARCHIVED = "archived",
 }
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: "projects" }, options: { customName: "Project" } })
@@ -25,6 +24,9 @@ export class ProjectModel {
 
   @prop({ enum: ProjectStatus, type: () => String, default: ProjectStatus.ACTIVE, index: true })
   public status!: ProjectStatus;
+
+  @prop({ default: false, index: true })
+  public archived!: boolean;
 
   @prop({ type: () => [String], default: [] })
   public tags!: string[];

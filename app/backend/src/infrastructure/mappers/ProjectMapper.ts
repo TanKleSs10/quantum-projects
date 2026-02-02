@@ -14,6 +14,7 @@ export class ProjectMapper {
       model.description,
       model.tags ?? [],
       model.deadline,
+      model.archived ?? false,
     );
   }
 
@@ -24,6 +25,7 @@ export class ProjectMapper {
       team: new Types.ObjectId(project.teamId),
       createdBy: new Types.ObjectId(project.createdBy),
       status: project.status,
+      archived: project.archived,
       tags: project.tags,
       deadline: project.deadline,
     };

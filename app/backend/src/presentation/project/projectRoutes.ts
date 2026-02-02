@@ -53,6 +53,11 @@ export class ProjectRoutes {
       validateObjectIdParam("id"),
       asyncHandler(controller.archiveProject),
     );
+    router.patch(
+      "/:id/reopen",
+      validateObjectIdParam("id"),
+      asyncHandler(controller.reopenProject),
+    );
 
     router.use(
       "/:projectId/tasks",

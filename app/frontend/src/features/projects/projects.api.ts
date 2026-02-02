@@ -60,6 +60,12 @@ export function archiveProject(projectId: string) {
   })
 }
 
+export function reopenProject(projectId: string) {
+  return apiRequest<GetProjectResponse>(`/projects/${projectId}/reopen`, {
+    method: 'PATCH',
+  })
+}
+
 export function deleteProject(projectId: string) {
   return apiRequest<DeleteProjectResponse>(`/projects/${projectId}`, {
     method: 'DELETE',
