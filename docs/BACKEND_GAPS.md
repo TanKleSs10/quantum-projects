@@ -22,3 +22,8 @@ Current frontend references features that do not yet have backend support.
 
 - Task assignee display relies on team member data.
   - Works now via `GET /teams/:id` and `GET /teams/:id/members`.
+
+## Onboarding sample data
+
+- Backend should auto-create a starter team, project, and task when a user registers.
+- This provides a template and avoids an empty dashboard on first login.
