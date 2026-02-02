@@ -6,11 +6,11 @@ import { ILogger } from "@src/interfaces/Logger";
 import { ApplicationError } from "@src/shared/errors/ApplicationError";
 import { DomainError } from "@src/shared/errors/DomainError";
 
-export interface IUnarchiveProjectUseCase {
+export interface IReopenProjectUseCase {
   execute(projectId: string, requesterId: string): Promise<Project>;
 }
 
-export class UnarchiveProjectUseCase implements IUnarchiveProjectUseCase {
+export class ReopenProjectUseCase implements IReopenProjectUseCase {
   private readonly logger: ILogger;
 
   constructor(
@@ -18,12 +18,12 @@ export class UnarchiveProjectUseCase implements IUnarchiveProjectUseCase {
     private readonly teamRepository: ITeamRepository,
     logger: ILogger,
   ) {
-    this.logger = logger.child("UnarchiveProjectUseCase");
+    this.logger = logger.child("ReopenProjectUseCase");
   }
 
   async execute(projectId: string, requesterId: string): Promise<Project> {
     try {
-      this.logger.debug("Unarchiving project", { projectId, requesterId });
+      this.logger.debug("Reopening project", { projectId, requesterId });
 
       const project = await this.projectRepository.getProjectById(projectId);
       if (!project) {
@@ -41,7 +41,7 @@ export class UnarchiveProjectUseCase implements IUnarchiveProjectUseCase {
       }
 
       if (!this.isOwnerOrAdmin(team, requesterId)) {
-        this.logger.warn("Unauthorized project unarchive attempt", {
+        this.logger.warn("Unauthorized project reopen attempt", {
           projectId,
           requesterId,
         });
@@ -49,10 +49,7 @@ export class UnarchiveProjectUseCase implements IUnarchiveProjectUseCase {
       }
 
       try {
-        if (!project.archived) {
-          throw new Error("Project is not archived");
-        }
-        project.toggleArchive();
+        project.reopen();
       } catch (error: any) {
         throw new DomainError(
           error instanceof Error ? error.message : "Invalid project state",
@@ -61,17 +58,17 @@ export class UnarchiveProjectUseCase implements IUnarchiveProjectUseCase {
 
       const updated = await this.projectRepository.saveProject(project);
 
-      this.logger.info("Project unarchived", { projectId });
+      this.logger.info("Project reopened", { projectId });
       return updated;
     } catch (error: any) {
       if (error instanceof DomainError) throw error;
 
-      this.logger.error("Failed to unarchive project", {
+      this.logger.error("Failed to reopen project", {
         projectId,
         error: error instanceof Error ? error.message : String(error),
       });
 
-      throw new ApplicationError("Could not unarchive project", { cause: error });
+      throw new ApplicationError("Could not reopen project", { cause: error });
     }
   }
 

@@ -6,6 +6,7 @@ import { UpdateProjectUseCase } from "@src/application/usecases/project/UpdatePr
 import { PauseProjectUseCase } from "@src/application/usecases/project/PauseProjectUseCase";
 import { CompleteProjectUseCase } from "@src/application/usecases/project/CompleteProjectUseCase";
 import { ArchiveProjectUseCase } from "@src/application/usecases/project/ArchiveProjectUseCase";
+import { ReopenProjectUseCase } from "@src/application/usecases/project/ReopenProjectUseCase";
 import { ListProjectsByTeamUseCase } from "@src/application/usecases/project/ListProjectsByTeamUseCase";
 import { ListProjectsByUserUseCase } from "@src/application/usecases/project/ListProjectsByUserUseCase";
 import { CreateProjectSchema } from "@src/domain/dtos/CreateProjectDTO";
@@ -261,6 +262,34 @@ export class ProjectController {
       }
 
       const project = await new ArchiveProjectUseCase(
+        this.projectRepository,
+        this.teamRepository,
+        this.logger,
+      ).execute(projectId, requesterId);
+
+      return res.status(200).json({ success: true, data: project });
+    } catch (error) {
+      return this.handleError(res, error);
+    }
+  };
+
+  reopenProject = async (req: Request, res: Response) => {
+    try {
+      const projectId = req.params.id;
+      const requesterId = req.userId ?? null;
+      if (!projectId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Project ID is required" });
+      }
+      if (!requesterId) {
+        this.logger.error("Unauthorized: No user ID found in request");
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const project = await new ReopenProjectUseCase(
         this.projectRepository,
         this.teamRepository,
         this.logger,

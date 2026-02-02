@@ -3,7 +3,8 @@ import { formatDate } from '@/utils/format-date'
 
 type ProjectItemProps = {
   name: string
-  status: 'active' | 'paused' | 'completed' | 'archived'
+  status: 'active' | 'paused' | 'completed'
+  archived?: boolean
   tags?: string[]
   due?: string
   href?: string
@@ -13,20 +14,23 @@ const statusStyles = {
   active: 'text-success bg-success/10 border-success/20',
   paused: 'text-warning bg-warning/10 border-warning/20',
   completed: 'text-secondary bg-base border-border',
-  archived: 'text-muted bg-surface border-border',
 }
 
-export default function ProjectItem({ name, status, tags, due, href }: ProjectItemProps) {
+const archivedStyle = 'text-muted bg-surface border-border'
+
+export default function ProjectItem({ name, status, archived, tags, due, href }: ProjectItemProps) {
   const formattedDue = formatDate(due)
+  const statusLabel = archived ? 'archived' : status
+  const statusClass = archived ? archivedStyle : statusStyles[status]
   const content = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
         <p className="text-sm font-medium text-main">{name}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span
-            className={`rounded-full border px-2 py-0.5 text-xs ${statusStyles[status]}`}
+            className={`rounded-full border px-2 py-0.5 text-xs ${statusClass}`}
           >
-            {status}
+            {statusLabel}
           </span>
           {tags?.map((tag) => (
             <span

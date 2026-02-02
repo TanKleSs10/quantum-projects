@@ -40,8 +40,10 @@ describe("TeamController", () => {
 
   it("returns 401 when creating team without userId", async () => {
     const teamRepository = { createTeam: jest.fn() };
+    const userRepository = { getUserById: jest.fn() };
     const controller = new TeamController(
       teamRepository as any,
+      userRepository as any,
       createLogger() as any,
     );
 
@@ -60,8 +62,10 @@ describe("TeamController", () => {
 
   it("creates team successfully", async () => {
     const teamRepository = { createTeam: jest.fn() };
+    const userRepository = { getUserById: jest.fn() };
     const controller = new TeamController(
       teamRepository as any,
+      userRepository as any,
       createLogger() as any,
     );
 
@@ -88,8 +92,10 @@ describe("TeamController", () => {
 
   it("returns 401 when fetching team without userId", async () => {
     const teamRepository = { getTeamById: jest.fn() };
+    const userRepository = { getUserById: jest.fn() };
     const controller = new TeamController(
       teamRepository as any,
+      userRepository as any,
       createLogger() as any,
     );
 
@@ -108,8 +114,10 @@ describe("TeamController", () => {
 
   it("returns 400 when adding member with invalid payload", async () => {
     const teamRepository = { getTeamById: jest.fn(), saveTeam: jest.fn() };
+    const userRepository = { getUserById: jest.fn() };
     const controller = new TeamController(
       teamRepository as any,
+      userRepository as any,
       createLogger() as any,
     );
 

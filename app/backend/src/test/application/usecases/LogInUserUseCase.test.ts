@@ -99,6 +99,7 @@ describe("LogInUserUseCase", () => {
         id: validUser.id,
         name: validUser.name,
         email: validUser.email,
+        isVerified: true,
       },
       accessToken: "access-token",
       refreshToken: "refresh-token",

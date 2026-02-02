@@ -1,7 +1,15 @@
 # Quantum Projects
 
-Monorepo de una app de gestion de proyectos con backend (Express + TypeScript) y
-frontend (React + TypeScript). El objetivo actual es completar el MVP.
+Plataforma full-stack para gestion de proyectos con equipos, tareas y metricas.
+Monorepo con backend (Express + TypeScript) y frontend (React + Vite).
+
+## Caracteristicas (MVP)
+
+- Autenticacion con cookies httpOnly.
+- Equipos con roles (owner/admin/member).
+- Proyectos por equipo con estados y archivado.
+- Tareas por proyecto con asignacion y flujo de estado.
+- Dashboard con metricas y resumenes.
 
 ## Estructura
 
@@ -11,17 +19,16 @@ app/
   frontend/  # SPA (React + Vite)
 ```
 
-## Stack y principios
+## Stack
 
-- Backend: Express 5, TypeScript, MongoDB, arquitectura limpia.
-- Frontend: React 19, Vite, TypeScript, TanStack Query, Zustand.
-- Autenticacion por cookies httpOnly (no tokens en JS).
-- El backend es la fuente de verdad de reglas de negocio.
+- Backend: Express, TypeScript, MongoDB.
+- Frontend: React, Vite, TypeScript, TanStack Query, Zustand.
+- Auth: cookies httpOnly (sin tokens en JS).
 
 ## Requisitos
 
 - Node.js (version acorde a cada proyecto)
-- Docker + Docker Compose (opcional pero recomendado)
+- Docker + Docker Compose (opcional)
 
 ## Configuracion rapida (Docker Compose)
 
@@ -57,16 +64,20 @@ npm install
 npm run dev
 ```
 
-## Endpoints base (API)
+## Documentacion (centralizada en /docs)
 
-- Auth: `/auth/*`
-- Teams: `/teams/*`
-- Users: `/users/me/*`
-- Projects y Tasks: disponibles segun los modulos del dominio
+Backend:
+- `docs/backend/PROJECT.md`
+- `docs/backend/api-endpoints.md`
+- `docs/backend/branching.md`
+- `docs/backend/e2e-warnings.md`
 
-## Docs utiles
+Frontend:
+- `docs/frontend/CONTEXT.md`
+- `docs/frontend/CONTRIBUTING.md`
+- `docs/frontend/api-endpoints.md`
 
-- Backend: `app/backend/docs/PROJECT.md`
-- Frontend: `app/frontend/docs/CONTEXT.md`
-- API endpoints: `app/backend/docs/api-endpoints.md`, `app/frontend/docs/api-endpoints.md`
-
+Notas tecnicas:
+- `docs/notes/PROJECT_STATUS_NOTE.md`
+- `docs/notes/TASK_STATUS_NOTE.md`
+- `docs/notes/BACKEND_GAPS.md`

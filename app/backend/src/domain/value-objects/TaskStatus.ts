@@ -11,9 +11,9 @@ export type TaskStatusValue = (typeof TaskStatusValues)[number];
 
 const transitions: Record<TaskStatusValue, TaskStatusValue[]> = {
   todo: ["in_progress", "blocked", "done"],
-  in_progress: ["blocked", "done"],
-  blocked: ["in_progress", "done"],
-  done: [],
+  in_progress: ["todo", "blocked", "done"],
+  blocked: ["todo", "in_progress", "done"],
+  done: ["todo", "in_progress", "blocked"],
 };
 
 export class TaskStatus {
@@ -31,6 +31,7 @@ export class TaskStatus {
   }
 
   static canTransition(from: TaskStatusValue, to: TaskStatusValue): boolean {
+    if (from === to) return true;
     return transitions[from]?.includes(to) ?? false;
   }
 }

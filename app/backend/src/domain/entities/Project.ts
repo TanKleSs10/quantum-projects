@@ -10,6 +10,7 @@ export class Project {
     public description?: string,
     public tags: string[] = [],
     public deadline?: Date,
+    public archived: boolean = false,
   ) { }
 
   pause() {
@@ -33,18 +34,16 @@ export class Project {
     this.status = ProjectStatus.COMPLETED;
   }
 
-  archive() {
+  reopen() {
     if (this.status !== ProjectStatus.COMPLETED) {
-      throw new Error("Only completed projects can be archived");
+      throw new Error("Only completed projects can be reopened");
     }
-    this.status = ProjectStatus.ARCHIVED;
+    this.status = ProjectStatus.ACTIVE;
+    this.archived = false;
   }
 
-  unarchive() {
-    if (this.status !== ProjectStatus.ARCHIVED) {
-      throw new Error("Only archived projects can be unarchived");
-    }
-    this.status = ProjectStatus.COMPLETED;
+  toggleArchive() {
+    this.archived = !this.archived;
   }
 
   rename(name: string) {

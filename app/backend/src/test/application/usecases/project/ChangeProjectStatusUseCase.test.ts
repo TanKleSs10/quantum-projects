@@ -2,7 +2,7 @@ import { ArchiveProjectUseCase } from "@src/application/usecases/project/Archive
 import { CompleteProjectUseCase } from "@src/application/usecases/project/CompleteProjectUseCase";
 import { PauseProjectUseCase } from "@src/application/usecases/project/PauseProjectUseCase";
 import { ResumeProjectUseCase } from "@src/application/usecases/project/ResumeProjectUseCase";
-import { UnarchiveProjectUseCase } from "@src/application/usecases/project/UnarchiveProjectUseCase";
+import { ReopenProjectUseCase } from "@src/application/usecases/project/ReopenProjectUseCase";
 import { Project } from "@src/domain/entities/Project";
 import { Team } from "@src/domain/entities/Team";
 import { TeamMembership } from "@src/domain/entities/TeamMembership";
@@ -129,7 +129,7 @@ describe("Project status use cases", () => {
     expect(result.status).toBe(ProjectStatus.COMPLETED);
   });
 
-  it("archives a completed project", async () => {
+  it("archives a project", async () => {
     const projectRepository = {
       getProjectById: jest.fn(),
       saveProject: jest.fn(),
@@ -159,10 +159,10 @@ describe("Project status use cases", () => {
 
     const result = await useCase.execute("project-id", "owner-id");
 
-    expect(result.status).toBe(ProjectStatus.ARCHIVED);
+    expect(result.archived).toBe(true);
   });
 
-  it("unarchives an archived project", async () => {
+  it("reopens a completed project", async () => {
     const projectRepository = {
       getProjectById: jest.fn(),
       saveProject: jest.fn(),
@@ -172,7 +172,7 @@ describe("Project status use cases", () => {
     };
     const logger = createLogger();
 
-    const useCase = new UnarchiveProjectUseCase(
+    const useCase = new ReopenProjectUseCase(
       projectRepository as any,
       teamRepository as any,
       logger as any,
@@ -183,7 +183,11 @@ describe("Project status use cases", () => {
       "Project",
       "team-id",
       "owner-id",
-      ProjectStatus.ARCHIVED,
+      ProjectStatus.COMPLETED,
+      undefined,
+      [],
+      undefined,
+      true,
     );
 
     projectRepository.getProjectById.mockResolvedValueOnce(project);
@@ -192,6 +196,7 @@ describe("Project status use cases", () => {
 
     const result = await useCase.execute("project-id", "owner-id");
 
-    expect(result.status).toBe(ProjectStatus.COMPLETED);
+    expect(result.status).toBe(ProjectStatus.ACTIVE);
+    expect(result.archived).toBe(false);
   });
 });

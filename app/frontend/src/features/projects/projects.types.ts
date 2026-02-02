@@ -1,4 +1,4 @@
-export type ProjectStatus = 'active' | 'paused' | 'completed' | 'archived'
+export type ProjectStatus = 'active' | 'paused' | 'completed'
 
 export type Project = {
   id: string
@@ -6,6 +6,7 @@ export type Project = {
   teamId: string
   createdBy: string
   status: ProjectStatus
+  archived: boolean
   description?: string
   tags: string[]
   deadline?: string

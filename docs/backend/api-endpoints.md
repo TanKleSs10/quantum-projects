@@ -258,7 +258,8 @@ Documento generado a partir de las rutas y DTOs actuales en el codigo.
   "name": "string",
   "teamId": "string",
   "createdBy": "string",
-  "status": "active | paused | completed | archived",
+  "status": "active | paused | completed",
+  "archived": "boolean",
   "description": "string | undefined",
   "tags": "string[]",
   "deadline": "string (ISO) | undefined"
@@ -683,7 +684,11 @@ Completa un proyecto (solo owner/admin).
 
 #### PATCH /projects/:id/archive
 
-Alterna entre `archived` y `completed` (solo owner/admin).
+Alterna el flag `archived` (solo owner/admin).
+
+#### PATCH /projects/:id/reopen
+
+Reabre un proyecto completado (`completed` -> `active`) y limpia `archived` si aplica.
 
 - Params: `id`
 - Response 200:

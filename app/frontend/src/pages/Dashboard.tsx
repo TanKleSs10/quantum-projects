@@ -100,6 +100,7 @@ export default function Dashboard() {
                   key={project.id}
                   name={project.name}
                   status={project.status}
+                  archived={project.archived}
                   tags={project.tags}
                   due={project.deadline}
                   href={`/projects/${project.id}`}
