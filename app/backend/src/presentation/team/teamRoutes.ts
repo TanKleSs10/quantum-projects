@@ -67,21 +67,13 @@ export class TeamRoutes {
 
     // project - task in team
     router.use(
-      "/:id/projects",
-      validateObjectIdParam("id"),
-      (req, _res, next) => {
-        req.params.teamId = req.params.id;
-        next();
-      },
+      "/:teamId/projects",
+      validateObjectIdParam("teamId"),
       ProjectRoutes.teamRoutes,
     );
     router.use(
-      "/:id/tasks",
-      validateObjectIdParam("id"),
-      (req, _res, next) => {
-        req.params.teamId = req.params.id;
-        next();
-      },
+      "/:teamId/tasks",
+      validateObjectIdParam("teamId"),
       TaskRoutes.teamRoutes,
     );
 
