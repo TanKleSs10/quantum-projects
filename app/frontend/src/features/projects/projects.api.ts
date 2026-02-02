@@ -9,9 +9,10 @@ import type {
 } from '@/features/projects/projects.types'
 
 export function createProject(payload: CreateProjectPayload) {
-  return apiRequest<CreateProjectResponse>('/projects', {
+  const { teamId, ...body } = payload
+  return apiRequest<CreateProjectResponse>(`/teams/${teamId}/projects`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   })
 }
 
@@ -23,7 +24,7 @@ export function getProjectsByTeamId(teamId: string) {
 
 // TODO: Rename from getProjectsByUser to getMyProjects for clarity
 export function getProjectsByUser() {
-  return apiRequest<GetProjectsResponse>('/users/me/projects', {
+  return apiRequest<GetProjectsResponse>('/me/projects', {
     method: 'GET',
   })
 }

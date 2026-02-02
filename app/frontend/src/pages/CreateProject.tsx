@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
 import InputText from '@/components/InputText'
@@ -8,8 +9,9 @@ import PageHeader from '@/components/PageHeader'
 import TextArea from '@/components/TextArea'
 import { createProjectSchema, type CreateProjectSchema } from '@/schemas/projects/create-project.schema'
 import { useCreateProject } from '@/features/projects/projects.hooks'
+import { useTeamById } from '@/features/team/team.hooks'
+import { useLayoutStore } from '@/store/layout.store'
 import { toastClient } from '@/utils/toast'
-import { useGetTeams } from '@/features/team/team.hooks'
 
 export default function CreateProject() {
   const {
@@ -22,25 +24,36 @@ export default function CreateProject() {
   })
   const navigate = useNavigate()
   const createProjectMutation = useCreateProject()
-  const { data } = useGetTeams()
-  const teams = data?.data ?? []
+  const teamId = useParams().teamId
+  const teamQuery = useTeamById(teamId)
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
+
+  useEffect(() => {
+    const teamName = teamQuery.data?.data?.name
+    if (teamName) {
+      setPageTitle(`Create project - ${teamName}`)
+    } else {
+      setPageTitle('Create project')
+    }
+
+    return () => setPageTitle(null)
+  }, [setPageTitle, teamQuery.data?.data?.name])
 
   const handleFormSubmit = handleSubmit((data) => {
     const tags = data.tags
       ? data.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
       : []
-
     createProjectMutation.mutate(
       {
         name: data.name,
         description: data.description?.trim() || undefined,
         tags,
-        teamId: data.teamId,
+        teamId: teamId || '',
         deadline: data.deadline || undefined,
       },
       {
         onSuccess: () => {
-          navigate('/projects')
+          navigate(`/team/${teamId}`)
           toastClient.success('Project created successfully')
         },
         onError: (error) => {
@@ -57,7 +70,7 @@ export default function CreateProject() {
           title="Create project"
           description="Set the basics so your team can start working."
           action={(
-            <Link to="/projects">
+            <Link to={`/teams/${teamId}`}>
               <Button variant="outline">Back to projects</Button>
             </Link>
           )}
@@ -88,42 +101,17 @@ export default function CreateProject() {
               {...register('tags')}
               error={errors.tags?.message}
             />
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-secondary" htmlFor="teamId">
-                  Team
-                </label>
-                <select
-                  id="teamId"
-                  className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  {...register('teamId')}
-                >
-                  <option value="">Select a team</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
-                {errors.teamId ? (
-                  <p className="mt-1 text-sm text-danger">{errors.teamId.message}</p>
-                ) : null}
-                {!teams.length ? (
-                  <p className="mt-2 text-sm text-muted">
-                    You don&apos;t have teams yet. Create one before starting a project.
-                  </p>
-                ) : null}
-              </div>
-              <InputText
-                label="Deadline (optional)"
-                type="date"
-                {...register('deadline')}
-                error={errors.deadline?.message}
-              />
-            </div>
+            <InputText
+              label="Deadline (optional)"
+              type="date"
+              {...register('deadline')}
+              error={errors.deadline?.message}
+            />
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <Link to="/projects">
+              <Link to={`/teams/${teamId}`}>
                 <Button type="button" variant="ghost">Cancel</Button>
               </Link>
-              <Button type="submit" disabled={!teams.length}>
+              <Button type="submit" variant="primary">
                 Create project
               </Button>
             </div>

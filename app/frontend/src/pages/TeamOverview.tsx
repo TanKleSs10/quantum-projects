@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import Button from '@/components/Button'
 import PageHeader from '@/components/PageHeader'
 import TeamOverviewMembers from '@/components/team/TeamOverviewMembers'
 import TeamOverviewProjects from '@/components/team/TeamOverviewProjects'
 import TeamOverviewSettings from '@/components/team/TeamOverviewSettings'
 import TeamOverviewTasks from '@/components/team/TeamOverviewTasks'
-import { useTeamById, useTeamProjects, useTeamTasks } from '@/features/team/team.hooks'
+import { useTeamById } from '@/features/team/team.hooks'
 import { useAuthStore } from '@/store/auth.store'
 import { useLayoutStore } from '@/store/layout.store'
 
@@ -21,25 +21,20 @@ const formatRole = (role?: 'owner' | 'admin' | 'member') => {
 export default function TeamOverview() {
   const { teamId } = useParams()
   const user = useAuthStore((state) => state.user)
-  const navigate = useNavigate()
   const {
     data: teamResponse,
     isLoading: isTeamLoading,
     isError: isTeamError,
     refetch: refetchTeam,
   } = useTeamById(teamId)
-  const {
-    data: projectsResponse,
-    isLoading: isProjectsLoading,
-    isError: isProjectsError,
-    refetch: refetchProjects,
-  } = useTeamProjects(teamId)
-  const {
-    data: tasksResponse,
-    isLoading: isTasksLoading,
-    isError: isTasksError,
-    refetch: refetchTasks,
-  } = useTeamTasks(teamId)
+  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
+
+  const team = teamResponse?.data
+  console.log('TeamOverview render', team)
+  useEffect(() => {
+    setPageTitle(team?.name ?? 'Team')
+    return () => setPageTitle(null)
+  }, [setPageTitle, team?.name])
 
   if (!teamId) {
     return (
@@ -47,18 +42,8 @@ export default function TeamOverview() {
     )
   }
 
-  const team = teamResponse?.data
-  const setPageTitle = useLayoutStore((state) => state.setPageTitle)
   const members = team?.members ?? []
   const userRole = formatRole(members.find((member) => member.userId === user?.id)?.role)
-
-  const projects = projectsResponse?.data ?? []
-  const tasks = tasksResponse?.data ?? []
-
-  useEffect(() => {
-    setPageTitle(team?.name ?? 'Team')
-    return () => setPageTitle(null)
-  }, [setPageTitle, team?.name])
 
   return (
     <>
@@ -83,14 +68,9 @@ export default function TeamOverview() {
       </section>
 
       <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <TeamOverviewProjects
-          projects={projects}
-          isLoading={isProjectsLoading}
-          isError={isProjectsError}
-          onRetry={refetchProjects}
-          onCreate={() => navigate('/projects/create')}
-        />
+        <TeamOverviewProjects teamId={teamId} />
         <TeamOverviewMembers
+          teamId={teamId}
           members={members}
           isLoading={isTeamLoading}
           isError={isTeamError}
@@ -99,13 +79,8 @@ export default function TeamOverview() {
       </section>
 
       <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <TeamOverviewTasks
-          tasks={tasks}
-          isLoading={isTasksLoading}
-          isError={isTasksError}
-          onRetry={refetchTasks}
-        />
-        <TeamOverviewSettings />
+        <TeamOverviewTasks teamId={teamId} />
+        <TeamOverviewSettings teamId={teamId} />
       </section>
     </>
   )

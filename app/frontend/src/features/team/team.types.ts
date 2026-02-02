@@ -32,6 +32,16 @@ export type CreateTeamResponse = {
   data: Team
 }
 
+export type UpdateTeamPayload = {
+  name: string
+  description?: string
+}
+
+export type UpdateTeamResponse = {
+  success: boolean
+  data: Team
+}
+
 export type GetTeamsResponse = {
   success: boolean
   data: Team[]
@@ -42,6 +52,11 @@ export type GetTeamByIdPayload = {
 }
 
 export type GetTeamByIdResponse = {
+  success: boolean
+  data: Team
+}
+
+export type TeamMemberActionResponse = {
   success: boolean
   data: Team
 }

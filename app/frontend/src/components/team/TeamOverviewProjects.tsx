@@ -2,31 +2,27 @@ import { Link } from 'react-router'
 import Button from '@/components/Button'
 import DashboardCard from '@/components/DashboardCard'
 import EmptyState from '@/components/EmptyState'
-import type { Project } from '@/features/projects/projects.types'
+import { useTeamProjects } from '@/features/team/team.hooks'
 
-type TeamOverviewProjectsProps = {
-  projects: Project[]
-  isLoading?: boolean
-  isError?: boolean
-  onRetry?: () => void
-  onCreate: () => void
-}
+export default function TeamOverviewProjects({ teamId }: { teamId: string }) {
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch
+  } = useTeamProjects(teamId)
+  const projects = data?.data
 
-export default function TeamOverviewProjects({
-  projects,
-  isLoading = false,
-  isError = false,
-  onCreate,
-  onRetry,
-}: TeamOverviewProjectsProps) {
   return (
     <DashboardCard
       title="Projects"
       description="Projects currently tracked in this team."
       action={
-        <Button variant="primary" onClick={onCreate}>
-          Create project
-        </Button>
+        <Link to={`/teams/${teamId}/project/create`}>
+          <Button variant="primary">
+            Create project
+          </Button>
+        </Link>
       }
     >
       {isLoading ? (
@@ -36,14 +32,14 @@ export default function TeamOverviewProjects({
           title="Unable to load projects"
           description="Try again in a moment."
           action={
-            <Button variant="outline" onClick={onRetry}>
+            <Button variant="outline" onClick={() => refetch()}>
               Retry
             </Button>
           }
         />
-      ) : projects.length ? (
+      ) : projects!.length ? (
         <div className="space-y-3">
-          {projects.map((project) => (
+          {projects!.map((project) => (
             <Link
               key={project.id}
               to={`/projects/${project.id}`}
@@ -63,9 +59,11 @@ export default function TeamOverviewProjects({
           title="No projects yet"
           description="Create a project to start organizing work."
           action={
-            <Button variant="primary" onClick={onCreate}>
-              Create project
-            </Button>
+            <Link to={`/teams/${teamId}/project/create`}>
+              <Button variant="primary" >
+                Create project
+              </Button>
+            </Link>
           }
         />
       )}

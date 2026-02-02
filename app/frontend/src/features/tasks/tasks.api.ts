@@ -48,7 +48,7 @@ export function getTaskById(taskId: string) {
 }
 
 export function getTasksByUser() {
-  return apiRequest<TaskListResponse>('/users/me/tasks', {
+  return apiRequest<TaskListResponse>('/me/tasks', {
     method: 'GET',
   })
 }

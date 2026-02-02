@@ -14,6 +14,8 @@ import Settings from '@/pages/Settings'
 import Teams from '@/pages/Teams'
 import CreateTeam from '@/pages/CreateTeam'
 import TeamOverview from '@/pages/TeamOverview'
+import TeamSettings from '@/pages/TeamSettings'
+import TeamMembers from '@/pages/TeamMembers'
 import Projects from '@/pages/Projects'
 import CreateProject from '@/pages/CreateProject'
 import ProjectOverview from '@/pages/ProjectOverview'
@@ -43,15 +45,17 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/create" element={<CreateProject />} />
+            <Route path="/teams/:teamId/project/create" element={<CreateProject />} />
             <Route path="/projects/:projectId" element={<ProjectOverview />} />
             <Route path="/projects/:projectId/edit" element={<EditProject />} />
             <Route path="/tasks" element={<Tasks />} />
-            <Route path="/tasks/create" element={<CreateTask />} />
+            <Route path="/projects/:projectId/task/create" element={<CreateTask />} />
             <Route path="/tasks/:taskId" element={<TaskOverview />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/teams/create" element={<CreateTeam />} />
-            <Route path="/teams/:teamId" element={<TeamOverview />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/teams/create" element={<CreateTeam />} />
+          <Route path="/teams/:teamId" element={<TeamOverview />} />
+          <Route path="/teams/:teamId/members" element={<TeamMembers />} />
+          <Route path="/teams/:teamId/settings" element={<TeamSettings />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
