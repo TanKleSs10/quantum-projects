@@ -29,6 +29,7 @@ export default function TaskOverview() {
   const user = useAuthStore((state) => state.user)
   const [isReassignOpen, setIsReassignOpen] = useState(false)
   const [assigneeId, setAssigneeId] = useState('')
+  const [statusSelection, setStatusSelection] = useState('')
   const members = useMemo(() => teamQuery.data?.data.members ?? [], [teamQuery.data])
   const hasMembers = members.length > 1
 
@@ -36,6 +37,10 @@ export default function TaskOverview() {
     setPageTitle(task?.title ?? 'Task')
     return () => setPageTitle(null)
   }, [setPageTitle, task?.title])
+
+  useEffect(() => {
+    setStatusSelection(task?.status ?? '')
+  }, [task?.status])
 
   const role = useMemo(() => {
     return members.find((member) => member.userId === user?.id)?.role
@@ -53,6 +58,26 @@ export default function TaskOverview() {
       {
         onSuccess: () => {
           toastClient.success('Task marked as done')
+          queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+          queryClient.invalidateQueries({ queryKey: ['tasks'] })
+        },
+        onError: (error) => {
+          toastClient.error(error.message || 'Failed to update task status')
+        },
+      }
+    )
+  }
+
+  const handleStatusUpdate = () => {
+    if (!taskId || !statusSelection) {
+      return
+    }
+
+    changeStatusMutation.mutate(
+      { status: statusSelection as 'todo' | 'in_progress' | 'blocked' | 'done' },
+      {
+        onSuccess: () => {
+          toastClient.success('Task status updated')
           queryClient.invalidateQueries({ queryKey: ['task', taskId] })
           queryClient.invalidateQueries({ queryKey: ['tasks'] })
         },
@@ -154,13 +179,32 @@ export default function TaskOverview() {
 
         <DashboardCard title="Quick actions">
           <div className="space-y-3">
-            <Button
-              className="w-full"
-              onClick={handleMarkDone}
-              disabled={!task || task.status === 'done' || changeStatusMutation.isPending}
-            >
-              {task?.status === 'done' ? 'Completed' : 'Mark as done'}
-            </Button>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-secondary" htmlFor="taskStatus">
+                Change status
+              </label>
+              <select
+                id="taskStatus"
+                className="w-full rounded-md border border-border bg-base px-3 py-2 text-sm text-main transition-colors duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                value={statusSelection}
+                onChange={(event) => setStatusSelection(event.target.value)}
+                disabled={!task || changeStatusMutation.isPending}
+              >
+                <option value="">Select status</option>
+                <option value="todo">To do</option>
+                <option value="in_progress">In progress</option>
+                <option value="blocked">Blocked</option>
+                <option value="done">Done</option>
+              </select>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleStatusUpdate}
+                disabled={!task || !statusSelection || statusSelection === task?.status || changeStatusMutation.isPending}
+              >
+                Update status
+              </Button>
+            </div>
             <Button
               variant="outline"
               className="w-full"
